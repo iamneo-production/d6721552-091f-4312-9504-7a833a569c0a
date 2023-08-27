@@ -1,0 +1,57 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: tp-api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: tp-user-profile-api
+          uri: lb://tp-user-profile-api
+          predicates:
+            - Path=/api/tp/user-profile/**
+          filters:
+            - RewritePath=/api/tp/user-profile/(?<ResourcePath>.*), /api/user-profile/$\{ResourcePath}
+
+        - id: tp-blog-post-api
+          uri: lb://tp-blog-post-api
+          predicates:
+            - Path=/api/tp/blog-post/**
+          filters:
+            - RewritePath=/api/tp/blog-post/(?<ResourcePath>.*), /api/blog-post/$\{ResourcePath}
+
+        - id: tp-topic-management-api
+          uri: lb://tp-topic-management-api
+          predicates:
+            - Path=/api/tp/topic-management/**
+          filters:
+            - RewritePath=/api/tp/topic-management/(?<ResourcePath>.*), /api/topic-management/$\{ResourcePath}
+
+        - id: tp-language-management-api
+          uri: lb://tp-language-management-api
+          predicates:
+            - Path=/api/tp/language-management/**
+          filters:
+            - RewritePath=/api/tp/language-management/(?<ResourcePath>.*), /api/language-management/$\{ResourcePath}
+
+        - id: tp-auth-api
+          uri: lb://tp-auth-api
+          predicates:
+            - Path=/api/tp/auth/**
+          filters:
+            - RewritePath=/api/tp/auth/(?<ResourcePath>.*), /api/auth/$\{ResourcePath}
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0

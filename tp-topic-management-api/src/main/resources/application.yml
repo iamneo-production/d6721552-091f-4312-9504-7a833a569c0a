@@ -1,0 +1,28 @@
+server:
+  port: 8083
+
+logging:
+  level:
+    root: INFO
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: tp-topic-management-api
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui/index.html
