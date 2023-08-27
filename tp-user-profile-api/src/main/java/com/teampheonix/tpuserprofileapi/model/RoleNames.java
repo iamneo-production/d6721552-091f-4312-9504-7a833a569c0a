@@ -1,11 +1,15 @@
 package com.teampheonix.tpuserprofileapi.model;
 
-
-
-import com.teampheonix.tpuserprofileapi.exception.InvalidRequestException;
+import com.teampheonix.tpuserprofileapi.exception.TpErrorCodes;
+import com.teampheonix.tpuserprofileapi.exception.TpException;
 
 public enum RoleNames {
-	ADMINISTRATOR,BLOGGER,READER,CONTENTMODERATOR,TRANSLATOR ;
+
+    ADMIN,
+    BLOGGER,
+    READER,
+    CONTENT_MODERATOR,
+    TRANSLATOR;
 
 	public static RoleNames valueOfIgnoreCase(String value) {
         for (RoleNames roles : RoleNames.values()) {
@@ -13,7 +17,7 @@ public enum RoleNames {
                 return roles;
             }
         }
-        throw new InvalidRequestException("No enum constant with name " + value);
+        throw new TpException(TpErrorCodes.INVALID_ROLE);
     }
 	
 }

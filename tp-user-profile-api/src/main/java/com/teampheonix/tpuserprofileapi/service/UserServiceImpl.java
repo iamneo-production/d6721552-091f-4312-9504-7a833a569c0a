@@ -1,16 +1,17 @@
 package com.teampheonix.tpuserprofileapi.service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
+import com.teampheonix.tpuserprofileapi.exception.TpErrorCodes;
+import com.teampheonix.tpuserprofileapi.exception.TpException;
+import com.teampheonix.tpuserprofileapi.model.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.teampheonix.tpuserprofileapi.exception.InvalidRequestException;
-import com.teampheonix.tpuserprofileapi.model.RoleNames;
-import com.teampheonix.tpuserprofileapi.model.User;
-import com.teampheonix.tpuserprofileapi.model.UserRequest;
-import com.teampheonix.tpuserprofileapi.model.UserResponse;
 import com.teampheonix.tpuserprofileapi.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,20 +23,21 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private UserRepository repo;
 
-	public void registerUser(User user) {
+	public void registerUser(UserRequest user) {
 		validateUser(user);
 		User existingUser = repo.findByUserId(user.getUserId());
 		if (existingUser != null) {
 			log.error("UserId is already Exist");
-			throw new InvalidRequestException("UserId is already Exist");
+			throw new TpException(TpErrorCodes.USER_ALREADY_EXISTS);
 		}
 
 		User userEntity = new User();
 		userEntity.setUserId(user.getUserId());
 		userEntity.setEmail(user.getEmail());
 		userEntity.setPassword(user.getPassword());
-        userEntity.setRole(user.getRole());
-
+		Set<Role> roleSet = new HashSet<>();
+		user.getRole().forEach(r -> roleSet.add(new Role(0, r)));
+        userEntity.setRole(roleSet);
 
 		repo.save(userEntity);
 		log.info("User registered successfully.");
@@ -46,31 +48,8 @@ public class UserServiceImpl implements UserService {
 		UserResponse userResponse = new UserResponse();
 		userResponse.setUserId(user.getUserId());
 		userResponse.setEmail(user.getEmail());
-		userResponse.setPassword(user.getPassword());
-		userResponse.setRole(user.getRole());
-		log.info("User updated successfully.");
+		userResponse.setRoles(user.getRole().stream().toList());
 		return userResponse;
-	}
-
-	private void validateUser(User user) {
-		if (user == null || StringUtils.isBlank(user.getUserId()) || StringUtils.isBlank(user.getEmail())
-				|| StringUtils.isBlank(user.getPassword())) {
-			log.error("Invalid User Request");
-			throw new InvalidRequestException("Invalid User Request");
-		}
-	}
-
-	private User validateAndGetUser(String userId) {
-		if (StringUtils.isBlank(userId)) {
-			log.error("Invalid User Id");
-			throw new InvalidRequestException("Invalid User Id");
-		}
-		User user = repo.findByUserId(userId);
-		if (user == null) {
-			log.error("No User Found for User Id : " + userId);
-			throw new InvalidRequestException("No User Found for User Id : " + userId);
-		}
-		return user;
 	}
 
 	public User updateUser(User user, String userId) {
@@ -88,7 +67,7 @@ public class UserServiceImpl implements UserService {
 		Optional<User> findByUserId = Optional.of(repo.findByUserId(userId));
 		if (findByUserId.isEmpty()) {
 			log.error("User does not Exist");
-			throw new InvalidRequestException("User does not Exist");
+			throw new TpException(TpErrorCodes.INVALID_USER_ID);
 
 		}
 		repo.delete(findByUserId.get());
@@ -96,17 +75,43 @@ public class UserServiceImpl implements UserService {
 		return "Deleted successfully";
 	}
 
-	    public User login(User userRequest) {
-	    	
-	    	if(userRequest == null || StringUtils.isBlank(userRequest.getUserId()) || 
-		            StringUtils.isBlank(userRequest.getPassword())) {
-		        		log.error("Invalid User Request");
-		                throw new InvalidRequestException("Invalid User Request");
-		            } 
-	        return repo.findUserByUserIdAndPassword(userRequest.getUserId(), userRequest.getPassword());
-	    }
+	public UserClaimsResponse login(UserAuthRequest userRequest) {
+		if(userRequest == null || StringUtils.isBlank(userRequest.getUserID()) ||
+			StringUtils.isBlank(userRequest.getPassword())) {
+				log.error("Invalid User Request");
+				throw new TpException(TpErrorCodes.INVALID_REQUEST);
+			}
+		User user = repo.findUserByUserIdAndPassword(userRequest.getUserID(), userRequest.getPassword());
+		if (user == null) {
+			log.error("Invalid User Id or Password");
+			throw new TpException(TpErrorCodes.INVALID_USERNAME_OR_PASSWORD);
+		}
+		UserClaimsResponse claimsResponse = new UserClaimsResponse();
+		claimsResponse.setUserID(user.getUserId());
+		claimsResponse.setRoles(new ArrayList<>());
+		user.getRole().forEach(r -> claimsResponse.getRoles().add(r.getRoleName()));
+		return claimsResponse;
+	}
 
-	
-	
+	private void validateUser(UserRequest user) {
+		if (user == null || StringUtils.isBlank(user.getUserId()) || StringUtils.isBlank(user.getEmail())
+				|| StringUtils.isBlank(user.getPassword())) {
+			log.error("Invalid User Request");
+			throw new TpException(TpErrorCodes.INVALID_REQUEST);
+		}
+	}
+
+	private User validateAndGetUser(String userId) {
+		if (StringUtils.isBlank(userId)) {
+			log.error("Invalid User Id");
+			throw new TpException(TpErrorCodes.INVALID_REQUEST);
+		}
+		User user = repo.findByUserId(userId);
+		if (user == null) {
+			log.error("No User Found for User Id : " + userId);
+			throw new TpException(TpErrorCodes.INVALID_USER_ID);
+		}
+		return user;
+	}
 
 }

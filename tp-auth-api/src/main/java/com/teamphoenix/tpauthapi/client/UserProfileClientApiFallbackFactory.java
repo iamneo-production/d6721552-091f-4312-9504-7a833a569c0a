@@ -15,12 +15,12 @@ public class UserProfileClientApiFallbackFactory implements FallbackFactory<User
 
     @Override
     public UserProfileClientApi create(Throwable cause) {
-        return new UserProfileClientApi() {
-            @Override
-            public ResponseDto<UserClaims> validateUser(AuthRequest authRequest, String userID) {
-                log.error("Error occurred while calling User Profile API");
-                throw new TpException(TpErrorCodes.USER_PROFILE_API_ERROR);
+        return authRequest -> {
+            if (cause instanceof TpException) {
+                throw new TpException(((TpException) cause).getCode());
             }
+            log.error("Error occurred while calling User Profile API - Cause", cause);
+            throw new TpException(TpErrorCodes.USER_PROFILE_API_ERROR);
         };
     }
 

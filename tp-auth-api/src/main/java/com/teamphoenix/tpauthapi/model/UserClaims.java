@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class UserClaims {
 
-    private List<String> userID;
+    private String userID;
     private List<String> roles;
 
 }

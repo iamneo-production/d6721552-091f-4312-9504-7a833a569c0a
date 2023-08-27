@@ -20,12 +20,20 @@ import java.util.List;
 @Slf4j
 public class ApiGatewayFilter implements GlobalFilter, Ordered {
 
+    private static final String[] ALLOWED_URLS = {
+            "/user-profile/user/register",
+            "/auth/login"
+    };
+
     private static final String AUTH_KEY = "AUTH_KEY";
     private static final String USER_ID = "USER_ID";
     private static final String CLAIMS = "CLAIMS";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        if (Arrays.stream(ALLOWED_URLS).anyMatch(u -> StringUtils.contains(exchange.getRequest().getURI().toString(), u))) {
+            return chain.filter(exchange);
+        }
         HttpCookie authKey = exchange.getRequest().getCookies().getFirst(AUTH_KEY);
         if (authKey == null || StringUtils.isBlank(authKey.getValue())) {
             log.error("Unauthorized User - auth key is not present");

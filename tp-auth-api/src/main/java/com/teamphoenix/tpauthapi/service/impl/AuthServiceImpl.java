@@ -67,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public UserClaims validateUser(AuthRequest request) {
-        ResponseDto<UserClaims> response = userProfileClientApi.validateUser(request, request.getUserID());
+        ResponseDto<UserClaims> response = userProfileClientApi.validateUser(request);
 
         if (response == null || response.getData() == null) {
             throw new TpException(TpErrorCodes.USER_PROFILE_API_ERROR);

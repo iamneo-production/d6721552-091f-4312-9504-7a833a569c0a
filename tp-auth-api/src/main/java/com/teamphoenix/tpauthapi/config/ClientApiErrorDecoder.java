@@ -6,11 +6,13 @@ import com.teamphoenix.tpauthapi.exception.TpException;
 import com.teamphoenix.tpauthapi.model.ResponseDto;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class ClientApiErrorDecoder implements ErrorDecoder {
 
     private final Map<String,TpErrorCodes> errorCodeMap;
@@ -21,7 +23,6 @@ public class ClientApiErrorDecoder implements ErrorDecoder {
 
     @Override
     public Exception decode(String methodKey, Response response) {
-        String requestUrl = response.request().url();
         Response.Body responseBody = response.body();
         HttpStatus responseStatus = HttpStatus.valueOf(response.status());
 
@@ -34,6 +35,7 @@ public class ClientApiErrorDecoder implements ErrorDecoder {
                     clientErrorCode = errorResponse.getErrors().get(0).getCode();
                 }
             } catch (Exception e) {
+                log.error(e.getMessage());
                 throw new TpException(TpErrorCodes.USER_PROFILE_API_ERROR);
             }
             TpErrorCodes errorCode = this.errorCodeMap.get(clientErrorCode);

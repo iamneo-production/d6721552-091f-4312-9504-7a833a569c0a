@@ -1,5 +1,7 @@
 package com.teamphoenix.tpauthapi.controller;
 
+import com.teamphoenix.tpauthapi.exception.TpErrorCodes;
+import com.teamphoenix.tpauthapi.exception.TpException;
 import com.teamphoenix.tpauthapi.model.AuthRequest;
 import com.teamphoenix.tpauthapi.model.ResponseDto;
 import com.teamphoenix.tpauthapi.model.Token;
@@ -29,7 +31,13 @@ public class AuthController {
         UserClaims claims = authService.validateUser(authRequest);
         String claimsPayload = claims.getUserID() + ";" + String.join(",", claims.getRoles());
         String authKey = Base64.getEncoder().encodeToString(claimsPayload.getBytes());
-        response.addCookie(new Cookie("AUTH_KEY", authKey));
+        Cookie cookie = new Cookie("AUTH_KEY", authKey);
+        cookie.setMaxAge(24 * 60 * 60);
+        cookie.setSecure(true);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setDomain("localhost");
+        response.addCookie(cookie);
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess("User authenticated successfully"));
     }
 
@@ -50,7 +58,7 @@ public class AuthController {
         if(Objects.isNull(request)
                 || StringUtils.isBlank(request.getUserID())
                 || StringUtils.isBlank(request.getPassword())) {
-            throw new InvalidRequestException("Invalid User Request");
+            throw new TpException(TpErrorCodes.INVALID_REQUEST);
         }
     }
 
