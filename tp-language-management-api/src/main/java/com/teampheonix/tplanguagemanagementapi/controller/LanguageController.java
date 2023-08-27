@@ -21,14 +21,7 @@ import com.teampheonix.tplanguagemanagementapi.entity.Language;
 import com.teampheonix.tplanguagemanagementapi.entity.ResponseDto;
 import com.teampheonix.tplanguagemanagementapi.exceptions.ResourceNotFoundException;
 import com.teampheonix.tplanguagemanagementapi.serviceImpl.LanguageServiceImpl;
-//import com.google.cloud.translate.Translate;
-//import com.google.cloud.translate.TranslateOptions;
-//import com.google.cloud.translate.Translation;
 
-
-//import com.google.cloud.translate.Translate;
-//import com.google.cloud.translate.TranslateOptions;
-//import com.google.cloud.translate.Translation;
 
 @RestController
 @RequestMapping("/api/language-management")
@@ -51,7 +44,7 @@ public class LanguageController {
 	
 //	@GetMapping("/contents/{postId}")
 	@GetMapping("/contents/{contentId}")
-	public ResponseEntity<ResponseDto<Optional<Language>>> getContent(@PathVariable int contentId,@RequestParam String language) throws ResourceNotFoundException{
+	public ResponseEntity<ResponseDto<Optional<Language>>> getContent(@PathVariable int contentId) throws ResourceNotFoundException{
 //		try {
 //			Optional<Language> lang = languageServcie.getContent(contentId);
 //			ResponseEntity.status(HttpStatus.FOUND).body(lang);
