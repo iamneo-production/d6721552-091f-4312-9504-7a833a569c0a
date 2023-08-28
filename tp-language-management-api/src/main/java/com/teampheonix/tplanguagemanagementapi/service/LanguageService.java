@@ -1,18 +1,14 @@
 package com.teampheonix.tplanguagemanagementapi.service;
 
-import java.util.Optional;
-
-import com.teampheonix.tplanguagemanagementapi.entity.Language;
-import com.teampheonix.tplanguagemanagementapi.exceptions.ResourceNotFoundException;
+import com.teampheonix.tplanguagemanagementapi.entity.LanguageContent;
+import com.teampheonix.tplanguagemanagementapi.model.LanguageContentRequest;
 
 public interface LanguageService {
 	
-	Language createContent(Language lanuage);
-	
-	Optional<Language> getContent(int contentId) throws ResourceNotFoundException;
-	
-	Language updateContent(Language language, int contentId) throws ResourceNotFoundException;
-	
-	String deleteContent(int contentId) throws ResourceNotFoundException;
+	LanguageContent createContent(LanguageContentRequest languageContentRequest, String userId);
+	LanguageContent getContentById(long contentId);
+	LanguageContent getContentByLanguage(long postId, String language);
+	LanguageContent updateContent(LanguageContentRequest languageContentRequest, long contentId, String userId);
+	String deleteContent(long contentId);
 
 }

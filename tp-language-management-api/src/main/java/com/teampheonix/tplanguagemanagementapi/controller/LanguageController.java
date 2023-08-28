@@ -1,78 +1,79 @@
 package com.teampheonix.tplanguagemanagementapi.controller;
 
-
-
-import java.util.Optional;
-
+import com.teampheonix.tplanguagemanagementapi.aspect.AuthorizeRoles;
+import com.teampheonix.tplanguagemanagementapi.aspect.RolesConstants;
+import com.teampheonix.tplanguagemanagementapi.entity.LanguageContent;
+import com.teampheonix.tplanguagemanagementapi.exception.ApiErrorCodes;
+import com.teampheonix.tplanguagemanagementapi.exception.ApiException;
+import com.teampheonix.tplanguagemanagementapi.model.LanguageContentRequest;
+import com.teampheonix.tplanguagemanagementapi.service.LanguageService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.teampheonix.tplanguagemanagementapi.entity.Language;
-import com.teampheonix.tplanguagemanagementapi.entity.ResponseDto;
-import com.teampheonix.tplanguagemanagementapi.exceptions.ResourceNotFoundException;
-import com.teampheonix.tplanguagemanagementapi.serviceImpl.LanguageServiceImpl;
-
+import com.teampheonix.tplanguagemanagementapi.model.ResponseDto;
 
 @RestController
 @RequestMapping("/api/language-management")
 public class LanguageController {
-	
-//	/api/tp/language-management/content POST (use ESAPI encodeForHTML)
-//	/api/tp/language-management/contents/{postId}?language="en" GET 
-//	/api/tp/language-management/contents/{contentId} PUT
-//	/api/tp/language-management/contents/{contentId} DELETE
-	
+
 	@Autowired
-	LanguageServiceImpl languageServcie;
+	private LanguageService languageService;
 	
 	@PostMapping("/content")
-	public ResponseEntity<Language> createContent(@RequestBody Language lanuage){
-		Language lang = languageServcie.createContent(lanuage);
-		
-		return ResponseEntity.status(HttpStatus.CREATED).body(lang);
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
+			RolesConstants.ROLES_CONTENT_MODERATOR, RolesConstants.ROLES_TRANSLATOR })
+	public ResponseEntity<LanguageContent> createContent(HttpServletRequest request,
+														 @RequestBody LanguageContentRequest languageContentRequest){
+		String userId = request.getHeader("USER_ID");
+		validateLanguageContentRequest(languageContentRequest);
+		LanguageContent content = languageService.createContent(languageContentRequest, userId);
+		return ResponseEntity.status(HttpStatus.CREATED).body(content);
 	}
-	
-//	@GetMapping("/contents/{postId}")
+
 	@GetMapping("/contents/{contentId}")
-	public ResponseEntity<ResponseDto<Optional<Language>>> getContent(@PathVariable int contentId) throws ResourceNotFoundException{
-//		try {
-//			Optional<Language> lang = languageServcie.getContent(contentId);
-//			ResponseEntity.status(HttpStatus.FOUND).body(lang);
-//			return ResponseEntity.ok(ResponseDto.forSuccess(new Language()));
-//		}
-//		catch(NoSuchElementException e){
-//			 List<ErrorDto> errorList = new ArrayList<>();
-//			 ErrorDto errorDto1 = new ErrorDto("3001", "ContentId not found");
-//	           errorList.add(errorDto1);
-//			ResponseDto<Object> errorResponse = ResponseDto.forError(errorList);
-//		     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-//		}
-		
-        
-		return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess(languageServcie.getContent(contentId)));
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_CONTENT_MODERATOR })
+	public ResponseEntity<ResponseDto<LanguageContent>> getContent(@PathVariable long contentId) {
+		return ResponseEntity.status(HttpStatus.OK).body(
+				ResponseDto.forSuccess(languageService.getContentById(contentId)));
+	}
+
+	@GetMapping("/contents/{postId}")
+	public ResponseEntity<ResponseDto<LanguageContent>> getContentByLanguage(
+			@PathVariable("postId") long postId, @RequestParam("language") String language) {
+		return ResponseEntity.status(HttpStatus.OK).body(
+				ResponseDto.forSuccess(languageService.getContentByLanguage(postId, language)));
 	}
 	
 	@PutMapping("/contents/{contentId}")
-	public ResponseEntity<ResponseDto<Language>> updateContent(@RequestBody Language lanuage, @PathVariable int contentId ) throws ResourceNotFoundException{
-		
-		return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess(languageServcie.updateContent(lanuage,contentId)));
-	
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
+			RolesConstants.ROLES_CONTENT_MODERATOR, RolesConstants.ROLES_TRANSLATOR })
+	public ResponseEntity<ResponseDto<LanguageContent>> updateContent(HttpServletRequest request,
+																	  @RequestBody LanguageContentRequest languageContentRequest,
+																	  @PathVariable long contentId ) {
+		String userId = request.getHeader("USER_ID");
+		validateLanguageContentRequest(languageContentRequest);
+		return ResponseEntity.status(HttpStatus.OK).body(
+				ResponseDto.forSuccess(languageService.updateContent(languageContentRequest,contentId, userId)));
 	}
 	
 	@DeleteMapping("/contents/{contentId}")
-	public ResponseEntity<String> deleteContent(@PathVariable int contentId ) throws ResourceNotFoundException{
-		languageServcie.deleteContent(contentId);
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
+			RolesConstants.ROLES_CONTENT_MODERATOR })
+	public ResponseEntity<String> deleteContent(@PathVariable long contentId ) {
+		languageService.deleteContent(contentId);
 		  return new ResponseEntity<String>("Content deleted successfully!!", HttpStatus.OK);
+	}
+
+	private void validateLanguageContentRequest(LanguageContentRequest request) {
+		if (StringUtils.isBlank(request.getLanguage())
+				|| StringUtils.isBlank(request.getContent())
+				|| request.getPostId() == null || request.getPostId() < 1) {
+			throw new ApiException(ApiErrorCodes.INVALID_REQUEST);
+		}
 	}
 
 }

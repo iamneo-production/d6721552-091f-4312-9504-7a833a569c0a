@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$" dumb="true">
+      <sourceFolder url="file://$MODULE_DIR$/tp-api-gateway/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-api-gateway/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-auth-api/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-auth-api/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-blog-post-api/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-blog-post-api/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-language-management-api/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-language-management-api/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-service-registry/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-service-registry/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-topic-management-api/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-topic-management-api/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-user-profile-api/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tp-user-profile-api/src/main/resources" type="java-resource" />
+    </content>
+  </component>
+</module>

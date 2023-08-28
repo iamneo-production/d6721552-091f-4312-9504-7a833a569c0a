@@ -1,13 +1,13 @@
 package com.teampheonix.tplanguagemanagementapi.repository;
 
-
-import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.teampheonix.tplanguagemanagementapi.entity.Language;
+import com.teampheonix.tplanguagemanagementapi.entity.LanguageContent;
+import org.springframework.stereotype.Repository;
 
-public interface LanguageRepository extends JpaRepository<Language, Integer>{
+@Repository
+public interface LanguageRepository extends JpaRepository<LanguageContent, Long> {
 
+    LanguageContent findLanguageContentByPostIdAndLanguage(long postId, String Language);
 
 }

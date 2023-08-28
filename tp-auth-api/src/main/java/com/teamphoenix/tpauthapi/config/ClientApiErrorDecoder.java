@@ -1,8 +1,8 @@
 package com.teamphoenix.tpauthapi.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.teamphoenix.tpauthapi.exception.TpErrorCodes;
-import com.teamphoenix.tpauthapi.exception.TpException;
+import com.teamphoenix.tpauthapi.exception.ApiErrorCodes;
+import com.teamphoenix.tpauthapi.exception.ApiException;
 import com.teamphoenix.tpauthapi.model.ResponseDto;
 import feign.Response;
 import feign.codec.ErrorDecoder;
@@ -15,7 +15,7 @@ import java.util.Map;
 @Slf4j
 public class ClientApiErrorDecoder implements ErrorDecoder {
 
-    private final Map<String,TpErrorCodes> errorCodeMap;
+    private final Map<String, ApiErrorCodes> errorCodeMap;
 
     public ClientApiErrorDecoder() {
         this.errorCodeMap = registerErrorCodeMap();
@@ -36,26 +36,26 @@ public class ClientApiErrorDecoder implements ErrorDecoder {
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
-                throw new TpException(TpErrorCodes.USER_PROFILE_API_ERROR);
+                throw new ApiException(ApiErrorCodes.USER_PROFILE_API_ERROR);
             }
-            TpErrorCodes errorCode = this.errorCodeMap.get(clientErrorCode);
-            return new TpException(errorCode);
+            ApiErrorCodes errorCode = this.errorCodeMap.get(clientErrorCode);
+            return new ApiException(errorCode);
         }
         if (responseStatus.isSameCodeAs(HttpStatus.UNAUTHORIZED) || responseStatus.isSameCodeAs(HttpStatus.FORBIDDEN)) {
-            return new TpException(TpErrorCodes.UNAUTHORIZED_ERROR);
+            return new ApiException(ApiErrorCodes.UNAUTHORIZED_ERROR);
         }
         else {
-            return new TpException(TpErrorCodes.USER_PROFILE_API_ERROR);
+            return new ApiException(ApiErrorCodes.USER_PROFILE_API_ERROR);
         }
     }
 
-    private Map<String,TpErrorCodes> registerErrorCodeMap() {
-        Map<String,TpErrorCodes> errorCodeMap = new HashMap<>();
-        errorCodeMap.put("1000", TpErrorCodes.UNAUTHORIZED_ERROR);
-        errorCodeMap.put("1001", TpErrorCodes.UNAUTHORIZED_ACCESS_ERROR);
-        errorCodeMap.put("1002", TpErrorCodes.INVALID_REQUEST);
-        errorCodeMap.put("1003", TpErrorCodes.INVALID_USERNAME_OR_PASSWORD);
-        errorCodeMap.put("1099", TpErrorCodes.USER_PROFILE_API_ERROR);
+    private Map<String, ApiErrorCodes> registerErrorCodeMap() {
+        Map<String, ApiErrorCodes> errorCodeMap = new HashMap<>();
+        errorCodeMap.put("1000", ApiErrorCodes.UNAUTHORIZED_ERROR);
+        errorCodeMap.put("1001", ApiErrorCodes.UNAUTHORIZED_ACCESS_ERROR);
+        errorCodeMap.put("1002", ApiErrorCodes.INVALID_REQUEST);
+        errorCodeMap.put("1003", ApiErrorCodes.INVALID_USERNAME_OR_PASSWORD);
+        errorCodeMap.put("1099", ApiErrorCodes.USER_PROFILE_API_ERROR);
         return errorCodeMap;
     }
 

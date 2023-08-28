@@ -1,6 +1,13 @@
 package com.teampheonix.tpuserprofileapi.controller;
 
+import com.teampheonix.tpuserprofileapi.aspect.AuthorizeRoles;
+import com.teampheonix.tpuserprofileapi.aspect.RolesConstants;
+import com.teampheonix.tpuserprofileapi.entity.User;
 import com.teampheonix.tpuserprofileapi.model.*;
+import com.teampheonix.tpuserprofileapi.model.request.UserAuthRequest;
+import com.teampheonix.tpuserprofileapi.model.request.UserRequest;
+import com.teampheonix.tpuserprofileapi.model.response.UserClaimsResponse;
+import com.teampheonix.tpuserprofileapi.model.response.UserResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,6 +43,7 @@ public class UserController {
 	}
 
 	@GetMapping("/{userId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN })
 	public ResponseEntity<ResponseDto<UserResponse>> getUser(@PathVariable String userId) {
 		return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess(service.getUser(userId)));
 	}
@@ -45,12 +53,19 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess(service.updateUser(user, userId)));
 	}
 	
+	@DeleteMapping("/remove-account")
+	public ResponseEntity<ResponseDto<String>> deleteUser(HttpServletRequest request) {
+		service.deleteUser(request.getHeader("USER_ID"));
+		return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess("User deleted successfully!!"));
+	}
+
 	@DeleteMapping("/{userId}")
-	public ResponseEntity<ResponseDto<String>> deleteUser(@PathVariable String userId) {
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN })
+	public ResponseEntity<ResponseDto<String>> deleteUserById(@PathVariable String userId) {
 		service.deleteUser(userId);
 		return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess("User deleted successfully!!"));
 	}
-		
+
 	@PostMapping("/validate")
     public ResponseEntity<ResponseDto<UserClaimsResponse>> login(@RequestBody UserAuthRequest userRequest) {
         UserClaimsResponse user = service.login(userRequest);

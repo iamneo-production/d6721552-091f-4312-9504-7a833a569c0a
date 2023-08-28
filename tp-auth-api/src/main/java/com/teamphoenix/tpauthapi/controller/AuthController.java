@@ -1,7 +1,7 @@
 package com.teamphoenix.tpauthapi.controller;
 
-import com.teamphoenix.tpauthapi.exception.TpErrorCodes;
-import com.teamphoenix.tpauthapi.exception.TpException;
+import com.teamphoenix.tpauthapi.exception.ApiErrorCodes;
+import com.teamphoenix.tpauthapi.exception.ApiException;
 import com.teamphoenix.tpauthapi.model.AuthRequest;
 import com.teamphoenix.tpauthapi.model.ResponseDto;
 import com.teamphoenix.tpauthapi.model.Token;
@@ -58,7 +58,7 @@ public class AuthController {
         if(Objects.isNull(request)
                 || StringUtils.isBlank(request.getUserID())
                 || StringUtils.isBlank(request.getPassword())) {
-            throw new TpException(TpErrorCodes.INVALID_REQUEST);
+            throw new ApiException(ApiErrorCodes.INVALID_REQUEST);
         }
     }
 

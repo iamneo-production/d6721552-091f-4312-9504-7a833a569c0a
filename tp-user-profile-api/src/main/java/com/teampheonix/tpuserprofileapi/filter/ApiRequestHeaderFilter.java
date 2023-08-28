@@ -1,7 +1,5 @@
 package com.teampheonix.tpuserprofileapi.filter;
 
-import com.teampheonix.tpuserprofileapi.exception.TpErrorCodes;
-import com.teampheonix.tpuserprofileapi.exception.TpException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

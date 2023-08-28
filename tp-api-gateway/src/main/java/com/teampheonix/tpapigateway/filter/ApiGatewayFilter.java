@@ -1,6 +1,6 @@
 package com.teampheonix.tpapigateway.filter;
 
-import com.teampheonix.tpapigateway.exception.TpException;
+import com.teampheonix.tpapigateway.exception.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -37,12 +37,12 @@ public class ApiGatewayFilter implements GlobalFilter, Ordered {
         HttpCookie authKey = exchange.getRequest().getCookies().getFirst(AUTH_KEY);
         if (authKey == null || StringUtils.isBlank(authKey.getValue())) {
             log.error("Unauthorized User - auth key is not present");
-            throw new TpException(HttpStatus.UNAUTHORIZED, "Unauthorized User");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Unauthorized User");
         }
         List<String> userDetails = Arrays.asList(new String(Base64.getDecoder().decode(authKey.getValue())).split(";"));
         if (userDetails.size() <= 1) {
             log.error("Unauthorized User - Invalid Auth Key");
-            throw new TpException(HttpStatus.UNAUTHORIZED, "Unauthorized User - Invalid Auth Key");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Unauthorized User - Invalid Auth Key");
         }
         exchange.getRequest()
                 .mutate()

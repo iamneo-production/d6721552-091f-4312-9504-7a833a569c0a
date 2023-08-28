@@ -1,8 +1,8 @@
 package com.teamphoenix.tpauthapi.service.impl;
 
 import com.teamphoenix.tpauthapi.client.UserProfileClientApi;
-import com.teamphoenix.tpauthapi.exception.TpErrorCodes;
-import com.teamphoenix.tpauthapi.exception.TpException;
+import com.teamphoenix.tpauthapi.exception.ApiErrorCodes;
+import com.teamphoenix.tpauthapi.exception.ApiException;
 import com.teamphoenix.tpauthapi.model.AuthRequest;
 import com.teamphoenix.tpauthapi.model.ResponseDto;
 import com.teamphoenix.tpauthapi.model.Token;
@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
                 .compact();
 
         if (jwtToken == null) {
-            throw new TpException(TpErrorCodes.INVALID_TOKEN);
+            throw new ApiException(ApiErrorCodes.INVALID_TOKEN);
         }
 
         Token token = new Token();
@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
                 .parseClaimsJws(token);
 
         if(jwt == null || jwt.getBody() == null || jwt.getBody().get("userID") == null) {
-            throw new TpException(TpErrorCodes.INVALID_TOKEN);
+            throw new ApiException(ApiErrorCodes.INVALID_TOKEN);
         }
         return jwt.getBody().get("userID").toString();
     }
@@ -70,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
         ResponseDto<UserClaims> response = userProfileClientApi.validateUser(request);
 
         if (response == null || response.getData() == null) {
-            throw new TpException(TpErrorCodes.USER_PROFILE_API_ERROR);
+            throw new ApiException(ApiErrorCodes.USER_PROFILE_API_ERROR);
         }
         return response.getData();
     }

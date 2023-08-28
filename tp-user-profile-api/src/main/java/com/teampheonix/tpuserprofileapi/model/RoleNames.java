@@ -1,7 +1,7 @@
 package com.teampheonix.tpuserprofileapi.model;
 
-import com.teampheonix.tpuserprofileapi.exception.TpErrorCodes;
-import com.teampheonix.tpuserprofileapi.exception.TpException;
+import com.teampheonix.tpuserprofileapi.exception.ApiErrorCodes;
+import com.teampheonix.tpuserprofileapi.exception.ApiException;
 
 public enum RoleNames {
 
@@ -17,7 +17,7 @@ public enum RoleNames {
                 return roles;
             }
         }
-        throw new TpException(TpErrorCodes.INVALID_ROLE);
+        throw new ApiException(ApiErrorCodes.INVALID_ROLE);
     }
 	
 }

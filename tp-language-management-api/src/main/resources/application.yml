@@ -13,6 +13,18 @@ eureka:
 spring:
   application:
     name: tp-language-management-api
+  datasource:
+    url: jdbc:h2:mem:tpdb
+    driver-class-name: org.h2.Driver
+    username: root
+    password: examly
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
 
 #management:
 #  tracing:
