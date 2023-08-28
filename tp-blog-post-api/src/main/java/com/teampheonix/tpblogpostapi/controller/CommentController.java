@@ -28,10 +28,10 @@ public class CommentController {
 	private PostService postService;
 
 	/*
-	/api/tp/blog-post/posts/{post-id}/comments GET - 
-	/api/tp/blog-post/posts/{post-id}/comment POST - 
-	/api/tp/blog-post/posts/{post-id}/comments/{comment-id} PUT - 
-	/api/tp/blog-post/posts/{post-id}/comments/{comment-id} DELETE 
+	/api/tp/blog-post/posts/{post-id}/comments GET -
+	/api/tp/blog-post/posts/{post-id}/comment POST -
+	/api/tp/blog-post/posts/{post-id}/comments/{comment-id} PUT -
+	/api/tp/blog-post/posts/{post-id}/comments/{comment-id} DELETE
 */
 	// adding comment on a perticular post by a perticular user
 	@PostMapping(value = "/posts/{postId}/addComment/{userId}")

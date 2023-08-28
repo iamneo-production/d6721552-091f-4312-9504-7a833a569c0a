@@ -47,7 +47,7 @@ public class PostController {
 		return new ResponseEntity<>(images, HttpStatus.OK);
 	}
 
-	// Get Post By Id 
+	// Get Post By Id
 	@GetMapping("/posts/{postId}")
 	public ResponseEntity<Post> getImageById(@PathVariable int postId) {
 		Post posts = postService.getPostById(postId);
