@@ -1,0 +1,1208 @@
+Subject: [PATCH] Uncommitted changes before Checkout at 29-08-2023 03:17 am [Changes]
+---
+Index: tp-blog-post-api/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tp-blog-post-api/build.gradle b/tp-blog-post-api/build.gradle
+--- a/tp-blog-post-api/build.gradle	
++++ b/tp-blog-post-api/build.gradle	
+@@ -34,6 +34,7 @@
+ 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+ 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+ 	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
++	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+ 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+ 	implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+ 	compileOnly 'org.projectlombok:lombok'
+Index: tp-user-profile-api/src/main/java/com/teampheonix/tpuserprofileapi/filter/ApiRequestHeaderFilter.java
+===================================================================
+diff --git a/tp-user-profile-api/src/main/java/com/teampheonix/tpuserprofileapi/filter/ApiRequestHeaderFilter.java b/tp-user-profile-api/src/main/java/com/teampheonix/tpuserprofileapi/filter/ApiRequestHeaderFilter.java
+--- a/tp-user-profile-api/src/main/java/com/teampheonix/tpuserprofileapi/filter/ApiRequestHeaderFilter.java	
++++ b/tp-user-profile-api/src/main/java/com/teampheonix/tpuserprofileapi/filter/ApiRequestHeaderFilter.java	
+@@ -18,7 +18,7 @@
+ @Slf4j
+ public class ApiRequestHeaderFilter extends OncePerRequestFilter implements Ordered {
+ 
+-    private static final String[] ALLOWED_URLS = { "/register", "/validate" };
++    private static final String[] ALLOWED_URLS = { "/register", "/validate", "/swagger", "/favico", "/api-docs" };
+     private static final String API_KEY = "dHAtdXNlci1wcm9maWxlLWFwaQ==";
+     private static final String API_KEY_HEADER = "API_KEY";
+     private static final String USER_ID_HEADER = "USER_ID";
+Index: tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/filter/ApiRequestHeaderFilter.java
+===================================================================
+diff --git a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/filter/ApiRequestHeaderFilter.java b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/filter/ApiRequestHeaderFilter.java
+--- a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/filter/ApiRequestHeaderFilter.java	
++++ b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/filter/ApiRequestHeaderFilter.java	
+@@ -18,7 +18,7 @@
+ @Slf4j
+ public class ApiRequestHeaderFilter extends OncePerRequestFilter implements Ordered {
+ 
+-    private static final String[] ALLOWED_URLS = { "/register", "/validate" };
++    private static final String[] ALLOWED_URLS = { "/swagger", "/favico", "/api-docs" };
+     private static final String API_KEY = "dHAtbGFuZ3VhZ2UtbWFuYWdlbWVudC1hcGk=";
+     private static final String API_KEY_HEADER = "API_KEY";
+     private static final String USER_ID_HEADER = "USER_ID";
+Index: tp-auth-api/build.gradle
+===================================================================
+diff --git a/tp-auth-api/build.gradle b/tp-auth-api/build.gradle
+--- a/tp-auth-api/build.gradle	
++++ b/tp-auth-api/build.gradle	
+@@ -34,6 +34,7 @@
+ 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+ 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+ 	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
++	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+ 
+ 	compileOnly 'org.projectlombok:lombok'
+ 	annotationProcessor 'org.projectlombok:lombok'
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/CommentController.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/CommentController.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/CommentController.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/CommentController.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/CommentController.java	
+@@ -2,7 +2,12 @@
+ 
+ import java.util.List;
+ 
++import com.teampheonix.tpblogpostapi.aspect.AuthorizeRoles;
++import com.teampheonix.tpblogpostapi.aspect.RolesConstants;
+ import com.teampheonix.tpblogpostapi.entity.Comment;
++import com.teampheonix.tpblogpostapi.exception.ApiErrorCodes;
++import com.teampheonix.tpblogpostapi.exception.ApiException;
++import com.teampheonix.tpblogpostapi.model.ResponseDto;
+ import com.teampheonix.tpblogpostapi.services.impl.CommentServiceImpl;
+ import com.teampheonix.tpblogpostapi.services.PostService;
+ import jakarta.servlet.http.HttpServletRequest;
+@@ -19,70 +24,39 @@
+ import org.springframework.web.bind.annotation.RestController;
+ 
+ @RestController
+-@RequestMapping("/api/tp/blog-post/")
++@RequestMapping("/api/blog-post/comments")
+ public class CommentController {
+ 
+ 	@Autowired
+ 	private CommentServiceImpl commentService;
+-	@Autowired
+-	private PostService postService;
+ 
+-	/*
+-	/api/tp/blog-post/posts/{post-id}/comments GET -
+-	/api/tp/blog-post/posts/{post-id}/comment POST -
+-	/api/tp/blog-post/posts/{post-id}/comments/{comment-id} PUT -
+-	/api/tp/blog-post/posts/{post-id}/comments/{comment-id} DELETE
+-*/
+-	// adding comment on a perticular post by a perticular user
+-	@PostMapping(value = "/posts/{postId}/addComment/{userId}")
+-	public String addCommentByPostId(@PathVariable(value = "postId") int postId,
+-									 @RequestBody Comment comment,
+-									 HttpServletRequest request) {
++	@PostMapping("/{postId}")
++	public ResponseEntity<ResponseDto<Comment>> addCommentByPostId(@PathVariable(value = "postId") int postId,
++														  @RequestBody Comment comment,
++														  HttpServletRequest request) {
+ 		String userId = request.getHeader("USER_ID");
+ 		comment.setUserId(userId);
+-		comment.setPost(postService.getPostById(postId));
+-		commentService.saveComment(comment);
+-		return "added";
++		return ResponseEntity.ok(ResponseDto.forSuccess(commentService.saveComment(postId, comment)));
+ 	}
+ 
+-	/*
+-    // Viewing comment by id
+-	@GetMapping("/{commentid}")
+-	public Comment getCommentById(@PathVariable(value = "commentid") int commentid) {
+-		return commentService.getCommentById(commentid);
++	@GetMapping("/{postId}")
++	public ResponseEntity<ResponseDto<List<Comment>>> getAllCommentsByPostId(@PathVariable(value = "postId") long postId) {
++		return ResponseEntity.ok(ResponseDto.forSuccess(commentService.findByPostId(postId)));
+ 	}
+ 
+-//viewing all comments
+-	@GetMapping("/allcomments")
+-	public List<Comment> allComments() {
+-		return commentService.getComments();
+-	}
+-	*/
+-	/*
+-	@PostMapping("/post/addComment")
+-	public Comment saveComment(@RequestBody Comment comment) {
+-		Comment addComment = commentService.saveComment(comment);
+-		return addComment;
++	@PutMapping("/{commentId}")
++	public ResponseEntity<ResponseDto<Comment>> updateComment(@RequestBody Comment comment, @PathVariable long commentId) {
++		if (commentId !=  comment.getCommentId()) {
++			throw new ApiException(ApiErrorCodes.INVALID_REQUEST);
++		}
++		return ResponseEntity.ok(ResponseDto.forSuccess(commentService.updateComment(commentId, comment)));
+ 	}
+-*/
+-// Viewing a perticular posts comments
+-	@GetMapping("/post/{postId}/comments")
+-	public ResponseEntity<List<Comment>> getAllCommentsByPostId(@PathVariable(value = "postId") int imageId) {
+-		List<Comment> comment = commentService.findByPostId(imageId);
+-		return new ResponseEntity<>(comment, HttpStatus.OK);
+-	}
+ 
+-	//uptade comments
+-	@PutMapping("/post/{postId}/update/{commentid}")
+-	public ResponseEntity<Comment> updateComment(@RequestBody Comment comment, @PathVariable int commentid) {
+-		Comment c = commentService.updateComment(commentid, comment);
+-		return new ResponseEntity<>(c, HttpStatus.CREATED);
+-	}
+-	// delete comments
+-	@DeleteMapping("/post/{postId}/delete/{commentid}")
+-	public ResponseEntity<String> deleteComment(@PathVariable int commentid) {
+-		String deleteComment = commentService.deleteComment(commentid);
+-		return new ResponseEntity<>(deleteComment, HttpStatus.OK);
++	@DeleteMapping("/{postId}/{commentId}")
++	@AuthorizeRoles(roles = {RolesConstants.ROLES_ADMIN})
++	public ResponseEntity<ResponseDto<String>> deleteComment(@PathVariable("postId") long postId,
++															 @PathVariable("commentId") long commentId) {
++		return ResponseEntity.ok(ResponseDto.forSuccess(commentService.deleteComment(postId, commentId)));
+ 	}
+ 
+ }
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/PostController.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/PostController.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/PostController.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/PostController.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/controller/PostController.java	
+@@ -1,80 +1,104 @@
+ package com.teampheonix.tpblogpostapi.controller;
+ 
+-import com.teampheonix.tpblogpostapi.entity.Comment;
++import com.teampheonix.tpblogpostapi.aspect.AuthorizeRoles;
++import com.teampheonix.tpblogpostapi.aspect.RolesConstants;
+ import com.teampheonix.tpblogpostapi.entity.Post;
+-import com.teampheonix.tpblogpostapi.services.CommentService;
++import com.teampheonix.tpblogpostapi.exception.ApiErrorCodes;
++import com.teampheonix.tpblogpostapi.exception.ApiException;
++import com.teampheonix.tpblogpostapi.model.ResponseDto;
++import com.teampheonix.tpblogpostapi.model.request.PostRequest;
++import com.teampheonix.tpblogpostapi.model.response.PostResponse;
+ import com.teampheonix.tpblogpostapi.services.PostService;
++import jakarta.servlet.http.HttpServletRequest;
+ import org.springframework.beans.factory.annotation.Autowired;
+ 
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.PathVariable;
++import org.springframework.web.bind.annotation.*;
+ 
+ import java.util.List;
+ 
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
+-import org.springframework.web.bind.annotation.DeleteMapping;
+-import org.springframework.web.bind.annotation.PostMapping;
+-import org.springframework.web.bind.annotation.PutMapping;
+-import org.springframework.web.bind.annotation.RequestBody;
+-import org.springframework.web.bind.annotation.RequestMapping;
+-import org.springframework.web.bind.annotation.RequestParam;
+-import org.springframework.web.bind.annotation.RestController;
+ 
+ @RestController
+-@RequestMapping("/api/tp/blog-post")
++@RequestMapping("/api/blog-post")
+ public class PostController {
+ 
+ 	@Autowired
+ 	private PostService postService;
+ 
+-	@GetMapping("/posts/language/{language}")
+-    public ResponseEntity<Post> getBlogPostByLanguage(
+-        @RequestParam(name = "language", defaultValue = "en") String language
+-    ) {
+-        Post blogPost = postService.getPostByLanguage(language);
+-        if (blogPost != null) {
+-            return ResponseEntity.ok(blogPost);
+-        } else {
+-            return ResponseEntity.notFound().build();
+-        }
+-    }
++	@PostMapping("/post")
++	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER })
++	public ResponseEntity<ResponseDto<PostResponse>> createPost(HttpServletRequest request,
++														@RequestBody PostRequest postRequest) {
++		String userId = request.getHeader("USER_ID");
++		String roles = request.getHeader("CLAIMS");
++		PostResponse post = postService.createPost(postRequest, userId, roles);
++		return ResponseEntity.ok(ResponseDto.forSuccess(post));
++	}
+ 
+-	// View Posts
+-	@GetMapping("/posts")
+-	public ResponseEntity<List<Post>> getAllImagesAdmin() {
+-		List<Post> images = postService.getAllPosts();
+-		return new ResponseEntity<>(images, HttpStatus.OK);
++	@PutMapping("/post/{postId}/content")
++	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_CONTENT_MODERATOR,
++			RolesConstants.ROLES_TRANSLATOR, RolesConstants.ROLES_ADMIN })
++	public ResponseEntity<ResponseDto<PostResponse>> addContentToPost(HttpServletRequest request,
++																	  @RequestBody PostRequest postRequest,
++																	  @PathVariable("postId") long postId) {
++		if (postRequest.getContent().getPostId() != postId) {
++			throw new ApiException(ApiErrorCodes.INVALID_REQUEST);
++		}
++		String userId = request.getHeader("USER_ID");
++		String roles = request.getHeader("CLAIMS");
++		PostResponse post = postService.addLanguageContentToPost(postRequest, userId, roles);
++		return ResponseEntity.ok(ResponseDto.forSuccess(post));
+ 	}
+ 
+-	// Get Post By Id
+ 	@GetMapping("/posts/{postId}")
+-	public ResponseEntity<Post> getImageById(@PathVariable int postId) {
+-		Post posts = postService.getPostById(postId);
+-		return new ResponseEntity<>(posts, HttpStatus.OK);
++    public ResponseEntity<ResponseDto<PostResponse>> getPostByLanguage(HttpServletRequest request,
++			@PathVariable("postId") long postId,
++			@RequestParam(name = "language", defaultValue = "en") String language) {
++		String userId = request.getHeader("USER_ID");
++		String roles = request.getHeader("CLAIMS");
++        PostResponse postResponse = postService.getPostByLanguage(postId, language, userId, roles);
++		return ResponseEntity.ok(ResponseDto.forSuccess(postResponse));
++    }
++
++	@GetMapping("/posts/all")
++	public ResponseEntity<ResponseDto<List<PostResponse>>> getAllPosts(HttpServletRequest request) {
++		String userId = request.getHeader("USER_ID");
++		String roles = request.getHeader("CLAIMS");
++		List<PostResponse> posts = postService.getAllPosts(userId, roles);
++		return ResponseEntity.ok(ResponseDto.forSuccess(posts));
++	}
++
++	@GetMapping("/posts")
++	public ResponseEntity<ResponseDto<List<PostResponse>>> getPostsOfUser(HttpServletRequest request) {
++		String userId = request.getHeader("USER_ID");
++		String roles = request.getHeader("CLAIMS");
++		List<PostResponse> posts = postService.findPostsByUserId(userId, roles);
++		return ResponseEntity.ok(ResponseDto.forSuccess(posts));
+ 	}
+ 
+-	// Add Posts
+-	@PostMapping("/posts/add/{userId}")
+-	public ResponseEntity<Post> addPosts(@RequestBody Post posts) {
+-		Post addPost = postService.savePost(posts);
+-		return new ResponseEntity<>(addPost, HttpStatus.CREATED);
++	@GetMapping("/post/{postId}")
++	public ResponseEntity<ResponseDto<PostResponse>> getPostByPostId(@PathVariable long postId,
++																	 HttpServletRequest request) {
++		String userId = request.getHeader("USER_ID");
++		String roles = request.getHeader("CLAIMS");
++		PostResponse posts = postService.getPostById(postId, userId, roles);
++		return ResponseEntity.ok(ResponseDto.forSuccess(posts));
+ 	}
+ 
+-	// Delete Posts
+-	@DeleteMapping("/posts/delete/{postId}")
+-	public String deletePosts(@PathVariable long postId) {
+-		postService.findPostsByUserId("");
+-		postService.deletePost(postId);
+-		return "deleted";
++	@DeleteMapping("/post/{postId}")
++	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_CONTENT_MODERATOR,
++			RolesConstants.ROLES_ADMIN })
++	public ResponseEntity<ResponseDto<String>> deletePosts(@PathVariable long postId) {
++		return ResponseEntity.ok(ResponseDto.forSuccess(postService.deletePost(postId)));
+ 	}
+ 
+-// Update Posts
+-	@PutMapping("/posts/update/{postId}")
+-	public ResponseEntity<Post> updatePosts(@RequestBody Post posts, @PathVariable long postId) {
+-		Post updatePost = postService.updatePost(posts);
+-		return new ResponseEntity<>(updatePost, HttpStatus.OK);
++	@PutMapping("/post/{postId}")
++	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_CONTENT_MODERATOR,
++			RolesConstants.ROLES_ADMIN })
++	public ResponseEntity<ResponseDto<Post>> updatePosts(@RequestBody PostRequest post, @PathVariable long postId) {
++		Post updatePost = postService.updatePost(postId, post.getPostName());
++		return ResponseEntity.ok(ResponseDto.forSuccess(updatePost));
+ 	}
+-// Get Posts By Language
+ 
+ }
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/PostService.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/PostService.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/PostService.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/PostService.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/PostService.java	
+@@ -1,18 +1,22 @@
+ package com.teampheonix.tpblogpostapi.services;
+ 
+ import com.teampheonix.tpblogpostapi.entity.Post;
++import com.teampheonix.tpblogpostapi.model.request.PostRequest;
++import com.teampheonix.tpblogpostapi.model.response.PostResponse;
+ 
+ import java.util.List;
+ 
+ 
+ public interface PostService {
+ 
+-	Post savePost(Post post);
+-	List<Post> getAllPosts();
+-	Post getPostById(long postId);
+-	Post updatePost(Post post);
+-	Post deletePost(long posId);
+-	List<Post> findPostsByUserId(String userId);
+-	Post getPostByLanguage(String Language);
++	PostResponse createPost(PostRequest postRequest, String userId, String roles);
++	PostResponse addLanguageContentToPost(PostRequest postRequest, String userId, String role);
++	List<PostResponse> getAllPosts(String userId, String roles);
++	List<PostResponse> findPostsByUserId(String userId, String roles);
++	PostResponse getPostByLanguage(long postId, String language, String userId, String roles);
++	PostResponse getPostById(long postId, String userId, String roles);
++	Post findPostById(long postId);
++	Post updatePost(long postId, String postName);
++	String deletePost(long posId);
+ 
+ }
+Index: tp-user-profile-api/build.gradle
+===================================================================
+diff --git a/tp-user-profile-api/build.gradle b/tp-user-profile-api/build.gradle
+--- a/tp-user-profile-api/build.gradle	
++++ b/tp-user-profile-api/build.gradle	
+@@ -34,6 +34,7 @@
+ 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+ 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+ 	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
++	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+ 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+ 	implementation group: 'io.github.wniemiec-util-data', name: 'string-utils', version: '1.0.0'
+ 	compileOnly 'org.projectlombok:lombok'
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/PostServiceImpl.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/PostServiceImpl.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/PostServiceImpl.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/PostServiceImpl.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/PostServiceImpl.java	
+@@ -1,54 +1,121 @@
+ package com.teampheonix.tpblogpostapi.services.impl;
+ 
++import java.util.ArrayList;
+ import java.util.List;
+ 
++import com.teampheonix.tpblogpostapi.client.LanguageManagementClientApi;
+ import com.teampheonix.tpblogpostapi.entity.Post;
+ import com.teampheonix.tpblogpostapi.exception.ApiErrorCodes;
+ import com.teampheonix.tpblogpostapi.exception.ApiException;
++import com.teampheonix.tpblogpostapi.model.request.PostRequest;
++import com.teampheonix.tpblogpostapi.model.response.LanguageContentResponse;
++import com.teampheonix.tpblogpostapi.model.response.PostResponse;
++import com.teampheonix.tpblogpostapi.repository.CommentRepository;
+ import com.teampheonix.tpblogpostapi.repository.PostRepository;
+ import com.teampheonix.tpblogpostapi.services.PostService;
++import jakarta.transaction.Transactional;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ 
+ @Service
+ public class PostServiceImpl implements PostService {
++
++	private static final String API_KEY = "dHAtbGFuZ3VhZ2UtbWFuYWdlbWVudC1hcGk=";
+ 	
+ 	@Autowired
+ 	private PostRepository postRepository;
+ 
++	@Autowired
++	private CommentRepository commentRepository;
++
++	@Autowired
++	private LanguageManagementClientApi languageManagementClientApi;
++
++	@Override
++	@Transactional
++	public PostResponse createPost(PostRequest postRequest, String userId, String roles) {
++		Post post = new Post();
++		post.setPostName(postRequest.getPostName());
++		post.setUserId(userId);
++		post = postRepository.save(post);
++		postRequest.getContent().setPostId(post.getPostId());
++		LanguageContentResponse response =
++				languageManagementClientApi.createContent(postRequest.getContent(), API_KEY, userId, roles).getData();
++		if (response == null) {
++			throw new ApiException(ApiErrorCodes.LANGUAGE_MANAGEMENT_API_ERROR);
++		}
++		return new PostResponse(post, List.of(response));
++	}
++
+ 	@Override
+-	public Post savePost(Post post) {
+-		return null;
++	public PostResponse addLanguageContentToPost(PostRequest postRequest, String userId, String roles) {
++		Post post = postRepository.findById(postRequest.getContent().getPostId())
++				.orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
++		LanguageContentResponse response =
++				languageManagementClientApi.createContent(postRequest.getContent(), API_KEY, userId, roles).getData();
++		if (response == null) {
++			throw new ApiException(ApiErrorCodes.LANGUAGE_MANAGEMENT_API_ERROR);
++		}
++		return new PostResponse(post, List.of(response));
+ 	}
+ 
+ 	@Override
+-	public List<Post> getAllPosts() {
+-		return null;
++	public List<PostResponse> getAllPosts(String userId, String roles) {
++		List<Post> posts = postRepository.findAll();
++		List<PostResponse> postResponses = new ArrayList<>();
++		posts.forEach(p -> {
++			List<LanguageContentResponse> responses =
++					languageManagementClientApi.getContentsByPostId(p.getPostId(), API_KEY, userId, roles).getData();
++			postResponses.add(new PostResponse(p, responses));
++		});
++		return postResponses;
+ 	}
+ 
+ 	@Override
+-	public Post getPostById(long postId) {
+-		return null;
++	public PostResponse getPostById(long postId, String userId, String roles) {
++		Post post = postRepository.findById(postId)
++				.orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
++		List<LanguageContentResponse> responses =
++				languageManagementClientApi.getContentsByPostId(postId, API_KEY, userId, roles).getData();
++		return new PostResponse(post, responses);
+ 	}
+ 
+ 	@Override
+-	public Post updatePost(Post post) {
+-		return null;
++	public Post findPostById(long postId) {
++		return postRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
+ 	}
+ 
+ 	@Override
+-	public Post deletePost(long posId) {
+-		return null;
++	public Post updatePost(long postId, String postName) {
++		Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
++		post.setPostName(postName);
++		return postRepository.save(post);
+ 	}
+ 
+ 	@Override
+-	public List<Post> findPostsByUserId(String userId) {
+-		return null;
++	public String deletePost(long postId) {
++		postRepository.deleteById(postId);
++		return "Deleted Successfully";
+ 	}
+ 
+ 	@Override
+-	public Post getPostByLanguage(String Language) {
+-		return null;
++	public List<PostResponse> findPostsByUserId(String userId, String roles) {
++		List<Post> posts = postRepository.findPostsByUserId(userId);
++		List<PostResponse> postResponses = new ArrayList<>();
++		posts.forEach(p -> {
++			List<LanguageContentResponse> responses =
++					languageManagementClientApi.getContentsByPostId(p.getPostId(), API_KEY, userId, roles).getData();
++			postResponses.add(new PostResponse(p, responses));
++		});
++		return postResponses;
++	}
++
++	@Override
++	public PostResponse getPostByLanguage(long postId, String language, String userId, String roles) {
++		Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
++		LanguageContentResponse response =
++				languageManagementClientApi.getContentByLanguage(postId, language, API_KEY, userId, roles).getData();
++		return new PostResponse(post, List.of(response));
+ 	}
+ 
+ }
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/CommentService.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/CommentService.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/CommentService.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/CommentService.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/CommentService.java	
+@@ -6,13 +6,9 @@
+ 
+ public interface CommentService {
+ 
+-	Comment saveComment(Comment comment);
+-	List<Comment> getComments();
+-	Comment getCommentById(long commentId);
+-	String deleteComment(long commentId);
+-	String deleteCommentsByPostId(long postId);
++	Comment saveComment(long postId, Comment comment);
++	String deleteComment(long postId, long commentId);
+ 	List<Comment> findByPostId(long postId);
+-	List<Comment> findByUserId(long userId);
+ 	Comment updateComment(long commentId, Comment comment);
+ 
+ }
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/CommentServiceImpl.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/CommentServiceImpl.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/CommentServiceImpl.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/CommentServiceImpl.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/services/impl/CommentServiceImpl.java	
+@@ -1,12 +1,15 @@
+ package com.teampheonix.tpblogpostapi.services.impl;
+ 
+ import java.util.List;
+-import java.util.Optional;
+ 
++import com.teampheonix.tpblogpostapi.entity.Post;
++import com.teampheonix.tpblogpostapi.exception.ApiErrorCodes;
+ import com.teampheonix.tpblogpostapi.repository.CommentRepository;
+ import com.teampheonix.tpblogpostapi.exception.ApiException;
+ import com.teampheonix.tpblogpostapi.entity.Comment;
++import com.teampheonix.tpblogpostapi.repository.PostRepository;
+ import com.teampheonix.tpblogpostapi.services.CommentService;
++import com.teampheonix.tpblogpostapi.services.PostService;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ 
+@@ -14,46 +17,45 @@
+ public class CommentServiceImpl implements CommentService {
+ 
+ 	@Autowired
+-	private CommentRepository repo;
++	private CommentRepository commentRepository;
+ 
+-	@Override
+-	public Comment saveComment(Comment comment) {
+-		return null;
+-	}
++	@Autowired
++	private PostRepository postRepository;
+ 
+-	@Override
+-	public List<Comment> getComments() {
+-		return null;
+-	}
+-
+-	@Override
+-	public Comment getCommentById(long commentId) {
+-		return null;
+-	}
++	@Autowired
++	private PostService postService;
+ 
+ 	@Override
+-	public String deleteComment(long commentId) {
+-		return null;
++	public Comment saveComment(long postId, Comment commentRequest) {
++		Post post = postRepository.findById(postId)
++				.orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
++		Comment comment = commentRepository.save(commentRequest);
++		post.getComments().add(comment);
++		postRepository.save(post);
++		return comment;
+ 	}
+ 
+ 	@Override
+-	public String deleteCommentsByPostId(long postId) {
+-		return null;
++	public String deleteComment(long postId, long commentId) {
++		Post post = postRepository.findById(postId)
++				.orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
++		post.getComments().clear();
++		postRepository.save(post);
++		commentRepository.deleteById(commentId);
++		return "Deleted Successfully";
+ 	}
+ 
+ 	@Override
+ 	public List<Comment> findByPostId(long postId) {
+-		return null;
+-	}
+-
+-	@Override
+-	public List<Comment> findByUserId(long userId) {
+-		return null;
++		return postRepository.findById(postId)
++				.orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND)).getComments();
+ 	}
+ 
+ 	@Override
+ 	public Comment updateComment(long commentId, Comment comment) {
+-		return null;
++		Comment entity = commentRepository.findById(commentId).orElseThrow(() -> new ApiException(ApiErrorCodes.INVALID_REQUEST));
++		entity.setComment(comment.getComment());
++		return commentRepository.save(entity);
+ 	}
+ 
+ }
+Index: tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/filter/ApiRequestHeaderFilter.java
+===================================================================
+diff --git a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/filter/ApiRequestHeaderFilter.java b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/filter/ApiRequestHeaderFilter.java
+--- a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/filter/ApiRequestHeaderFilter.java	
++++ b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/filter/ApiRequestHeaderFilter.java	
+@@ -18,7 +18,7 @@
+ @Slf4j
+ public class ApiRequestHeaderFilter extends OncePerRequestFilter implements Ordered {
+ 
+-    private static final String[] ALLOWED_URLS = { "/register", "/validate" };
++    private static final String[] ALLOWED_URLS = { "/swagger", "/favico", "/api-docs" };
+     private static final String API_KEY = "dHAtdG9waWMtbWFuYWdlbWVudC1hcGk=";
+     private static final String API_KEY_HEADER = "API_KEY";
+     private static final String USER_ID_HEADER = "USER_ID";
+Index: tp-language-management-api/build.gradle
+===================================================================
+diff --git a/tp-language-management-api/build.gradle b/tp-language-management-api/build.gradle
+--- a/tp-language-management-api/build.gradle	
++++ b/tp-language-management-api/build.gradle	
+@@ -34,7 +34,7 @@
+ 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+ 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+ 	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+-	//implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
++	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+ 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+ 	compileOnly 'org.projectlombok:lombok'
+ 	annotationProcessor 'org.projectlombok:lombok'
+Index: tp-topic-management-api/build.gradle
+===================================================================
+diff --git a/tp-topic-management-api/build.gradle b/tp-topic-management-api/build.gradle
+--- a/tp-topic-management-api/build.gradle	
++++ b/tp-topic-management-api/build.gradle	
+@@ -35,6 +35,7 @@
+ 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+ 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+ 	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
++	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+ 	compileOnly 'org.projectlombok:lombok'
+ 	annotationProcessor 'org.projectlombok:lombok'
+ 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/CommentRepository.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/CommentRepository.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/CommentRepository.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/CommentRepository.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/CommentRepository.java	
+@@ -9,8 +9,4 @@
+ @Repository
+ public interface CommentRepository extends JpaRepository<Comment, Long> {
+ 
+-	 List<Comment> findByPostPostId(int PostId);
+-	 Comment findByPostIdAndCommentId(int PostId);
+-	 List<Comment> findByUserUserId(int userId);
+-
+ }
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/PostRepository.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/PostRepository.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/PostRepository.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/PostRepository.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/repository/PostRepository.java	
+@@ -9,7 +9,6 @@
+ @Repository
+ public interface PostRepository extends JpaRepository<Post, Long> {
+ 
+-	List<Post> findByUserUserId(int userId);
+-	Post findByLanguage(String Language);
++	List<Post> findPostsByUserId(String userId);
+ 
+ }
+Index: tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ResponseDto.java
+===================================================================
+diff --git a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ResponseDto.java b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ResponseDto.java
+--- a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ResponseDto.java	
++++ b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ResponseDto.java	
+@@ -1,22 +1,26 @@
+ package com.teampheonix.tptopicmanagementapi.model;
+ 
+-import java.util.List;
+ import lombok.AllArgsConstructor;
+ import lombok.Data;
++import lombok.NoArgsConstructor;
++
++import java.util.List;
+ 
+ @Data
+ @AllArgsConstructor
+-public class ResponseDto<T> {
+-	private String status;
+-	private T data;
+-	private List<ErrorDto> errors;
++@NoArgsConstructor
++public class ResponseDto <T> {
++
++    private String status;
++    private T data;
++    private List<ErrorDto> errors;
+ 
+-	public static <T> ResponseDto<T> forSuccess(T data) {
+-		return new ResponseDto<>("SUCCESS", data, null);
+-	}
++    public static <T> ResponseDto<T> forSuccess(T data) {
++        return new ResponseDto<>("SUCCESS", data, null);
++    }
+ 
+-	public static ResponseDto<Object> forError(List<ErrorDto> errors) {
+-		return new ResponseDto<>("ERROR", null, errors);
+-	}
++    public static ResponseDto<Object> forError(List<ErrorDto> errors) {
++        return new ResponseDto<>("ERROR", null, errors);
++    }
+ 
+ }
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Comment.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Comment.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Comment.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Comment.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Comment.java	
+@@ -1,6 +1,5 @@
+ package com.teampheonix.tpblogpostapi.entity;
+ 
+-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+ import jakarta.persistence.*;
+ import lombok.Data;
+ 
+@@ -10,14 +9,9 @@
+ public class Comment {
+ 
+ 	@Id
+-	@GeneratedValue
++	@GeneratedValue(strategy = GenerationType.AUTO)
+ 	private Long commentId;
+ 	private String comment;
+ 	private String userId;
+ 
+-	@ManyToOne(fetch = FetchType.LAZY)
+-	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+-	@JoinColumn(name = "post_id")
+-	private Post post;
+-
+ }
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Post.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Post.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Post.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Post.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/entity/Post.java	
+@@ -2,9 +2,11 @@
+ 
+ import java.util.List;
+ import jakarta.persistence.*;
++import lombok.Data;
+ 
+ @Entity
+ @Table(name = "post")
++@Data
+ public class Post {
+ 
+ 	@Id
+@@ -12,7 +14,6 @@
+ 	public Long postId;
+ 
+ 	private String postName;
+-	private String language;
+ 	private String userId;
+ 
+ 	@OneToMany(cascade = CascadeType.ALL)
+Index: tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ErrorDto.java
+===================================================================
+diff --git a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ErrorDto.java b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ErrorDto.java
+--- a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ErrorDto.java	
++++ b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/ErrorDto.java	
+@@ -1,14 +1,15 @@
+ package com.teampheonix.tptopicmanagementapi.model;
+ 
+ import lombok.AllArgsConstructor;
+-
+ import lombok.Data;
++import lombok.NoArgsConstructor;
+ 
+ @Data
+ @AllArgsConstructor
++@NoArgsConstructor
+ public class ErrorDto {
+ 
+-	private String code;
+-	private String message;
++    private String code;
++    private String message;
+ 
+ }
+Index: tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicServiceImpl.java
+===================================================================
+diff --git a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicServiceImpl.java b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicServiceImpl.java
+--- a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicServiceImpl.java	
++++ b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicServiceImpl.java	
+@@ -4,11 +4,12 @@
+ import java.util.Optional;
+ import java.util.UUID;
+ 
++import com.teampheonix.tptopicmanagementapi.exception.ApiErrorCodes;
++import com.teampheonix.tptopicmanagementapi.exception.ApiException;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ 
+-import com.teampheonix.tptopicmanagementapi.exception.InvalidRequestException;
+-import com.teampheonix.tptopicmanagementapi.model.Topic;
++import com.teampheonix.tptopicmanagementapi.entity.Topic;
+ import com.teampheonix.tptopicmanagementapi.repository.TopicRepository;
+ 
+ import lombok.extern.slf4j.Slf4j;
+@@ -25,11 +26,9 @@
+ 		Topic findByTopicName = topicRepository.findByTopicName(topic.getTopicName());
+ 		if (findByTopicName != null) {
+ 			log.error("topic is already Exist");
+-			throw new InvalidRequestException("topic is already Exist");
++			throw new ApiException(ApiErrorCodes.INVALID_REQUEST);
+ 		}
+ 		Topic topicEntity = new Topic();
+-		String randomTopicId = UUID.randomUUID().toString();
+-		topicEntity.setTopicId(randomTopicId);
+ 		topicEntity.setTopicName(topic.getTopicName());
+ 		topicEntity.setCreatedBy(topic.getCreatedBy());
+ 		topicEntity.setCreationTimestamp(topic.getCreationTimestamp());
+@@ -91,7 +90,7 @@
+ 		System.out.println(findByTopicId);
+ 		if (findByTopicId.isEmpty()) {
+ 			log.error("Topic is not exist");
+-			throw new InvalidRequestException("topic is not  Exist");
++			throw new ApiException(ApiErrorCodes.TOPIC_NOT_FOUND);
+ 			
+ 		}
+ 		topicRepository.delete(findByTopicId.get());
+Index: tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/controller/TopicController.java
+===================================================================
+diff --git a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/controller/TopicController.java b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/controller/TopicController.java
+--- a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/controller/TopicController.java	
++++ b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/controller/TopicController.java	
+@@ -15,10 +15,9 @@
+ import org.springframework.web.bind.annotation.RestController;
+ 
+ import com.teampheonix.tptopicmanagementapi.model.ResponseDto;
+-import com.teampheonix.tptopicmanagementapi.model.Topic;
++import com.teampheonix.tptopicmanagementapi.entity.Topic;
+ import com.teampheonix.tptopicmanagementapi.service.TopicService;
+ 
+-
+ @RestController
+ @RequestMapping("/api/tp/topic-management/topics")
+ public class TopicController {
+@@ -26,6 +25,13 @@
+ 	@Autowired
+ 	private TopicService topicService;
+ 
++	//create
++	//put post
++	//delete post
++	//get topic by topic id
++	//get all topics
++	//update topic name
++	//delete topic
+ 
+ 	@PostMapping("/topic")
+ 	public ResponseEntity<ResponseDto<String>> createTopics(@RequestBody Topic topic) {
+Index: tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/Topic.java
+===================================================================
+diff --git a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/Topic.java b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/entity/Topic.java
+rename from tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/Topic.java
+rename to tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/entity/Topic.java
+--- a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/model/Topic.java	
++++ b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/entity/Topic.java	
+@@ -1,4 +1,4 @@
+-package com.teampheonix.tptopicmanagementapi.model;
++package com.teampheonix.tptopicmanagementapi.entity;
+ 
+ import java.time.LocalDateTime;
+ import java.util.Date;
+@@ -24,28 +24,21 @@
+ @Data
+ @NoArgsConstructor
+ @AllArgsConstructor
+-@Getter
+-@Setter
+ public class Topic {
+ 	
+ 	@Id
+-	private String topicId; 
++    @GeneratedValue(strategy = GenerationType.AUTO)
++	private long topicId;
+ 	@Column(unique = true)
+-	private String topicName; 
++	private String topicName;
+ 	private String createdBy; 
+-	private String lastUpdatedBy; 
+-
+-	
+-
+-	@Column(updatable = false) // Ensures the column value is only set on creation
++	private String lastUpdatedBy;
+     private LocalDateTime creationTimestamp;
+-
+     private LocalDateTime lastUpdatedTimestamp;
+ 
+     @PrePersist
+     protected void onCreate() {
+         creationTimestamp = LocalDateTime.now();
+-        lastUpdatedTimestamp = LocalDateTime.now();
+     }
+ 
+     @PreUpdate
+@@ -53,5 +46,4 @@
+         lastUpdatedTimestamp = LocalDateTime.now();
+     }
+ 
+-
+ }
+Index: tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicService.java
+===================================================================
+diff --git a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicService.java b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicService.java
+--- a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicService.java	
++++ b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/service/TopicService.java	
+@@ -1,15 +1,15 @@
+ package com.teampheonix.tptopicmanagementapi.service;
+ 
+ import java.util.List;
+-import com.teampheonix.tptopicmanagementapi.model.Topic;
+-
++import com.teampheonix.tptopicmanagementapi.entity.Topic;
+ 
+ public interface TopicService {
+ 
+ 	void createTopic(Topic topic);
+ 	Topic findByTopicName(String topicName);
+-	public List<Topic> getAllTopic();
++	List<Topic> getAllTopic();
+ 	Topic findByTopicId(String topicId);
+ 	Topic updateTopic(Topic topic, String topicId);
+ 	String deleteTopic(String topicId);
++
+ }
+Index: tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/controller/LanguageController.java
+===================================================================
+diff --git a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/controller/LanguageController.java b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/controller/LanguageController.java
+--- a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/controller/LanguageController.java	
++++ b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/controller/LanguageController.java	
+@@ -16,6 +16,8 @@
+ 
+ import com.teampheonix.tplanguagemanagementapi.model.ResponseDto;
+ 
++import java.util.List;
++
+ @RestController
+ @RequestMapping("/api/language-management")
+ public class LanguageController {
+@@ -26,21 +28,33 @@
+ 	@PostMapping("/content")
+ 	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
+ 			RolesConstants.ROLES_CONTENT_MODERATOR, RolesConstants.ROLES_TRANSLATOR })
+-	public ResponseEntity<LanguageContent> createContent(HttpServletRequest request,
++	public ResponseEntity<ResponseDto<LanguageContent>> createContent(HttpServletRequest request,
+ 														 @RequestBody LanguageContentRequest languageContentRequest){
+ 		String userId = request.getHeader("USER_ID");
+ 		validateLanguageContentRequest(languageContentRequest);
+ 		LanguageContent content = languageService.createContent(languageContentRequest, userId);
+-		return ResponseEntity.status(HttpStatus.CREATED).body(content);
++		return ResponseEntity.status(HttpStatus.CREATED).body(ResponseDto.forSuccess(content));
+ 	}
+ 
+-	@GetMapping("/contents/{contentId}")
++	@GetMapping("/content/{contentId}")
+ 	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_CONTENT_MODERATOR })
+ 	public ResponseEntity<ResponseDto<LanguageContent>> getContent(@PathVariable long contentId) {
+ 		return ResponseEntity.status(HttpStatus.OK).body(
+ 				ResponseDto.forSuccess(languageService.getContentById(contentId)));
+ 	}
+ 
++	@GetMapping("/contents/post/{postId}")
++	public ResponseEntity<ResponseDto<List<LanguageContent>>> getAllContentsOfPost(@PathVariable("postId") long postId) {
++		return ResponseEntity.status(HttpStatus.OK).body(
++				ResponseDto.forSuccess(languageService.getContentsByPostId(postId)));
++	}
++
++	@GetMapping("/contents/all")
++	public ResponseEntity<ResponseDto<List<LanguageContent>>> getAllContents() {
++		return ResponseEntity.status(HttpStatus.OK).body(
++				ResponseDto.forSuccess(languageService.getAllContents()));
++	}
++
+ 	@GetMapping("/contents/{postId}")
+ 	public ResponseEntity<ResponseDto<LanguageContent>> getContentByLanguage(
+ 			@PathVariable("postId") long postId, @RequestParam("language") String language) {
+@@ -63,15 +77,14 @@
+ 	@DeleteMapping("/contents/{contentId}")
+ 	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
+ 			RolesConstants.ROLES_CONTENT_MODERATOR })
+-	public ResponseEntity<String> deleteContent(@PathVariable long contentId ) {
++	public ResponseEntity<ResponseDto<String>> deleteContent(@PathVariable long contentId ) {
+ 		languageService.deleteContent(contentId);
+-		  return new ResponseEntity<String>("Content deleted successfully!!", HttpStatus.OK);
++		  return ResponseEntity.ok(ResponseDto.forSuccess("Content deleted successfully!!"));
+ 	}
+ 
+ 	private void validateLanguageContentRequest(LanguageContentRequest request) {
+ 		if (StringUtils.isBlank(request.getLanguage())
+-				|| StringUtils.isBlank(request.getContent())
+-				|| request.getPostId() == null || request.getPostId() < 1) {
++				|| StringUtils.isBlank(request.getContent())) {
+ 			throw new ApiException(ApiErrorCodes.INVALID_REQUEST);
+ 		}
+ 	}
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiErrorCodes.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiErrorCodes.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiErrorCodes.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiErrorCodes.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiErrorCodes.java	
+@@ -4,8 +4,10 @@
+ 
+     INVALID_REQUEST,
+     POST_NOT_FOUND,
++    CONTENT_NOT_FOUND,
+     UNAUTHORIZED_ACCESS_ERROR,
+     UNAUTHORIZED_ERROR,
++    LANGUAGE_MANAGEMENT_API_ERROR,
+     UNEXPECTED_ERROR
+ 
+ }
+Index: tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/LanguageService.java
+===================================================================
+diff --git a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/LanguageService.java b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/LanguageService.java
+--- a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/LanguageService.java	
++++ b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/LanguageService.java	
+@@ -3,11 +3,15 @@
+ import com.teampheonix.tplanguagemanagementapi.entity.LanguageContent;
+ import com.teampheonix.tplanguagemanagementapi.model.LanguageContentRequest;
+ 
++import java.util.List;
++
+ public interface LanguageService {
+ 	
+ 	LanguageContent createContent(LanguageContentRequest languageContentRequest, String userId);
+ 	LanguageContent getContentById(long contentId);
+ 	LanguageContent getContentByLanguage(long postId, String language);
++	List<LanguageContent> getContentsByPostId(long postId);
++	List<LanguageContent> getAllContents();
+ 	LanguageContent updateContent(LanguageContentRequest languageContentRequest, long contentId, String userId);
+ 	String deleteContent(long contentId);
+ 
+Index: tp-topic-management-api/src/main/resources/application.yml
+===================================================================
+diff --git a/tp-topic-management-api/src/main/resources/application.yml b/tp-topic-management-api/src/main/resources/application.yml
+--- a/tp-topic-management-api/src/main/resources/application.yml	
++++ b/tp-topic-management-api/src/main/resources/application.yml	
+@@ -17,6 +17,18 @@
+     openfeign:
+       circuitbreaker:
+         enabled: true
++  datasource:
++    url: jdbc:h2:mem:tpdb
++    driver-class-name: org.h2.Driver
++    username: root
++    password: examly
++  jpa:
++    hibernate:
++      ddl-auto: update
++    show-sql: true
++    properties:
++      hibernate:
++        dialect: org.hibernate.dialect.H2Dialect
+ 
+ management:
+   tracing:
+Index: tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/repository/TopicRepository.java
+===================================================================
+diff --git a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/repository/TopicRepository.java b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/repository/TopicRepository.java
+--- a/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/repository/TopicRepository.java	
++++ b/tp-topic-management-api/src/main/java/com/teampheonix/tptopicmanagementapi/repository/TopicRepository.java	
+@@ -1,21 +1,11 @@
+ package com.teampheonix.tptopicmanagementapi.repository;
+ 
+-import java.util.Optional;
+-
+ import org.springframework.data.jpa.repository.JpaRepository;
+ 
+-import com.teampheonix.tptopicmanagementapi.model.Topic;
+-
+-
+-
++import com.teampheonix.tptopicmanagementapi.entity.Topic;
++import org.springframework.stereotype.Repository;
+ 
+-
+-public interface TopicRepository extends JpaRepository<Topic, String> {
+-
+-	Topic findBytopicId(String topicId);
+-	Topic findByTopicName(String topicName);
+-	void deleteByTopicId(String topicId);
+-
+-	
++@Repository
++public interface TopicRepository extends JpaRepository<Topic, Long> {
+ 
+ }
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiExceptionHandler.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiExceptionHandler.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiExceptionHandler.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiExceptionHandler.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/exception/ApiExceptionHandler.java	
+@@ -44,7 +44,9 @@
+         errorCodeMap.put(ApiErrorCodes.UNAUTHORIZED_ERROR, new ErrorDto("2000", "Unauthorized Access"));
+         errorCodeMap.put(ApiErrorCodes.UNAUTHORIZED_ACCESS_ERROR, new ErrorDto("2001", "You don't have required access to perform the operation"));
+         errorCodeMap.put(ApiErrorCodes.INVALID_REQUEST, new ErrorDto("2002", "Invalid Request"));
+-        errorCodeMap.put(ApiErrorCodes.POST_NOT_FOUND, new ErrorDto("2003", "Invalid Request"));
++        errorCodeMap.put(ApiErrorCodes.POST_NOT_FOUND, new ErrorDto("2003", "Post Not Found"));
++        errorCodeMap.put(ApiErrorCodes.CONTENT_NOT_FOUND, new ErrorDto("2004", " Content Not Found"));
++        errorCodeMap.put(ApiErrorCodes.LANGUAGE_MANAGEMENT_API_ERROR, new ErrorDto("2098", "Unexpected Error Occurred from Upstream API"));
+         errorCodeMap.put(ApiErrorCodes.UNEXPECTED_ERROR, new ErrorDto("2099", "Unexpected Error Occurred!"));
+         return errorCodeMap;
+     }
+Index: tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/impl/LanguageServiceImpl.java
+===================================================================
+diff --git a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/impl/LanguageServiceImpl.java b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/impl/LanguageServiceImpl.java
+--- a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/impl/LanguageServiceImpl.java	
++++ b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/service/impl/LanguageServiceImpl.java	
+@@ -2,6 +2,7 @@
+ 
+ import java.time.LocalDateTime;
+ import java.time.format.DateTimeFormatter;
++import java.util.List;
+ import java.util.Optional;
+ import com.teampheonix.tplanguagemanagementapi.entity.LanguageContent;
+ import com.teampheonix.tplanguagemanagementapi.exception.ApiErrorCodes;
+@@ -45,6 +46,16 @@
+ 		return languageContent;
+ 	}
+ 
++	@Override
++	public List<LanguageContent> getContentsByPostId(long postId) {
++		return languageRepository.findLanguageContentsByPostId(postId);
++	}
++
++	@Override
++	public List<LanguageContent> getAllContents() {
++		return languageRepository.findAll();
++	}
++
+ 	@Override
+ 	public LanguageContent updateContent(LanguageContentRequest languageContentRequest, long contentId, String userId) {
+ 		LanguageContent languageContent = languageRepository.findById(contentId)
+Index: tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/filter/ApiRequestHeaderFilter.java
+===================================================================
+diff --git a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/filter/ApiRequestHeaderFilter.java b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/filter/ApiRequestHeaderFilter.java
+--- a/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/filter/ApiRequestHeaderFilter.java	
++++ b/tp-blog-post-api/src/main/java/com/teampheonix/tpblogpostapi/filter/ApiRequestHeaderFilter.java	
+@@ -18,7 +18,7 @@
+ @Slf4j
+ public class ApiRequestHeaderFilter extends OncePerRequestFilter implements Ordered {
+ 
+-    private static final String[] ALLOWED_URLS = { "/register", "/validate" };
++    private static final String[] ALLOWED_URLS = { "/swagger", "/favico", "/api-docs" };
+     private static final String API_KEY = "dHAtYmxvZy1wb3N0LWFwaQ==";
+     private static final String API_KEY_HEADER = "API_KEY";
+     private static final String USER_ID_HEADER = "USER_ID";
+Index: tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/repository/LanguageRepository.java
+===================================================================
+diff --git a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/repository/LanguageRepository.java b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/repository/LanguageRepository.java
+--- a/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/repository/LanguageRepository.java	
++++ b/tp-language-management-api/src/main/java/com/teampheonix/tplanguagemanagementapi/repository/LanguageRepository.java	
+@@ -5,9 +5,12 @@
+ import com.teampheonix.tplanguagemanagementapi.entity.LanguageContent;
+ import org.springframework.stereotype.Repository;
+ 
++import java.util.List;
++
+ @Repository
+ public interface LanguageRepository extends JpaRepository<LanguageContent, Long> {
+ 
+     LanguageContent findLanguageContentByPostIdAndLanguage(long postId, String Language);
++    List<LanguageContent> findLanguageContentsByPostId(long postId);
+ 
+ }
