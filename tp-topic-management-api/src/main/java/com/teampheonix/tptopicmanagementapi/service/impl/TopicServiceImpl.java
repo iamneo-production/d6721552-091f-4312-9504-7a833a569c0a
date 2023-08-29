@@ -9,6 +9,7 @@ import com.teampheonix.tptopicmanagementapi.exception.ApiException;
 import com.teampheonix.tptopicmanagementapi.model.PostSummaryResponse;
 import com.teampheonix.tptopicmanagementapi.model.TopicResponse;
 import com.teampheonix.tptopicmanagementapi.service.TopicService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,12 +48,13 @@ public class TopicServiceImpl implements TopicService {
 	public Topic updateTopic(Topic topicRequest, long topicId, String userId) {
 		Topic topic = topicRepository.findById(topicId)
 				.orElseThrow(() -> new ApiException(ApiErrorCodes.TOPIC_NOT_FOUND));
-		topic.setTopicName(topic.getTopicName());
+		topic.setTopicName(topicRequest.getTopicName());
 		topic.setLastUpdatedBy(userId);
 		return topicRepository.save(topic);
 	}
 
 	@Override
+	@Transactional
 	public String deleteTopic(long topicId, String userId, String roles) {
 		Topic topic = topicRepository.findById(topicId)
 				.orElseThrow(() -> new ApiException(ApiErrorCodes.TOPIC_NOT_FOUND));

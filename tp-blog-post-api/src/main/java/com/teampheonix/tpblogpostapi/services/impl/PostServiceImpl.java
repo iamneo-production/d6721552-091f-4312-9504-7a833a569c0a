@@ -146,16 +146,18 @@ public class PostServiceImpl implements PostService {
 		Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
 		post.getTopics().remove(topic);
 		postRepository.save(post);
-		return null;
+		return "Post removed from topic";
 	}
 
 	@Override
 	public String deletePostTopicsById(long topicId) {
-		Topic topic = topicRepository.findById(topicId)
-				.orElseThrow(() -> new ApiException(ApiErrorCodes.INVALID_REQUEST));
-		List<Post> posts = postRepository.findPostsByTopicsTopicId(topicId);
-		posts.forEach(p -> p.getTopics().remove(topic));
-		return "Deleted Successfully";
+		Optional<Topic> topic = topicRepository.findById(topicId);
+		if (topic.isPresent()) {
+			List<Post> posts = postRepository.findPostsByTopicsTopicId(topicId);
+			posts.forEach(p -> p.getTopics().remove(topic.get()));
+			return "Deleted Successfully";
+		}
+		return "No Posts are mapped to the topic";
 	}
 
 	@Override

@@ -23,7 +23,7 @@ import com.teampheonix.tptopicmanagementapi.entity.Topic;
 import com.teampheonix.tptopicmanagementapi.service.TopicService;
 
 @RestController
-@RequestMapping("/api/tp/topic-management/topics")
+@RequestMapping("/api/topic-management/topics")
 public class TopicController {
 
 	@Autowired
@@ -69,7 +69,7 @@ public class TopicController {
 
 	@DeleteMapping("/{topicId}/post/{postId}")
 	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER })
-	public ResponseEntity<ResponseDto<String>> deleteTopic(@PathVariable("topicId") long topicId,
+	public ResponseEntity<ResponseDto<String>> removePostFromTopic(@PathVariable("topicId") long topicId,
 														   @PathVariable("postId") long postId,
 														   HttpServletRequest request) {
 		String userId = request.getHeader("USER_ID");
