@@ -2,6 +2,10 @@ package com.teampheonix.tptopicmanagementapi.controller;
 
 import java.util.List;
 
+import com.teampheonix.tptopicmanagementapi.aspect.AuthorizeRoles;
+import com.teampheonix.tptopicmanagementapi.aspect.RolesConstants;
+import com.teampheonix.tptopicmanagementapi.model.TopicResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.teampheonix.tptopicmanagementapi.model.ResponseDto;
-import com.teampheonix.tptopicmanagementapi.model.Topic;
+import com.teampheonix.tptopicmanagementapi.entity.Topic;
 import com.teampheonix.tptopicmanagementapi.service.TopicService;
-
 
 @RestController
 @RequestMapping("/api/tp/topic-management/topics")
@@ -26,51 +29,68 @@ public class TopicController {
 	@Autowired
 	private TopicService topicService;
 
-
 	@PostMapping("/topic")
-	public ResponseEntity<ResponseDto<String>> createTopics(@RequestBody Topic topic) {
-		System.out.println("In controller" + topic.getTopicName());
-		topicService.createTopic(topic);
-		return ResponseEntity.status(HttpStatus.CREATED).body(ResponseDto.forSuccess("topic created Successfully"));
-
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER })
+	public ResponseEntity<ResponseDto<Topic>> createTopics(@RequestBody Topic topic, HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ResponseDto.forSuccess(topicService.createTopic(topic, userId, roles)));
 	}
 
-	@GetMapping
-	public ResponseEntity<ResponseDto<List<Topic>>> getAlltopics() {
-		List<Topic> allTopics = topicService.getAllTopic();
-		return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess(allTopics));
+	@PutMapping("/{topicId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_ADMIN,
+			RolesConstants.ROLES_CONTENT_MODERATOR })
+	public ResponseEntity<ResponseDto<Topic>> updateTopic(@PathVariable long topicId,
+											 @RequestBody Topic topic,
+											 HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		return ResponseEntity.ok(ResponseDto.forSuccess(topicService.updateTopic(topic, topicId, userId)));
 	}
 
-	@GetMapping("topic12/{topicName}")
-	public ResponseEntity<ResponseDto<Topic>> getTopicByTopicName(@PathVariable String topicName) {
-		Topic topic = topicService.findByTopicName(topicName);
-		if (topic != null) {
-			return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess(topic));
-		} else {
-			return ResponseEntity.notFound().build();
-		}
+	@DeleteMapping("/{topicId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_ADMIN,
+			RolesConstants.ROLES_CONTENT_MODERATOR })
+	public ResponseEntity<ResponseDto<String>> deleteTopic(@PathVariable long topicId,  HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		return ResponseEntity.ok(ResponseDto.forSuccess(topicService.deleteTopic(topicId, userId, roles)));
 	}
 
-	@GetMapping("topic1/{topicId}")
-	public ResponseEntity<ResponseDto<Topic>> getTopicById(@PathVariable String topicId) {
-		Topic topic = topicService.findByTopicId(topicId);
-		if (topic != null) {
-			return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.forSuccess(topic));
-		} else {
-			return ResponseEntity.notFound().build();
-		}
+	@PutMapping("/{topicId}/post/{postId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER })
+	public ResponseEntity<ResponseDto<TopicResponse>> addPostToTopic(@PathVariable("topicId") long topicId,
+																	 @PathVariable("postId") long postId,
+																	 HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		return ResponseEntity.ok(ResponseDto.forSuccess(topicService.addPostToTopic(topicId, postId, userId, roles)));
 	}
 
-	@PutMapping("/topic3/{topicId}")
-	public ResponseEntity<Topic> updateTopic(@PathVariable String topicId, @RequestBody Topic topic) {
-		return new ResponseEntity<Topic>(topicService.updateTopic(topic, topicId), HttpStatus.OK);
+	@DeleteMapping("/{topicId}/post/{postId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER })
+	public ResponseEntity<ResponseDto<String>> deleteTopic(@PathVariable("topicId") long topicId,
+														   @PathVariable("postId") long postId,
+														   HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		return ResponseEntity.ok(ResponseDto.forSuccess(topicService.removePostFromTopic(topicId, postId, userId, roles)));
 	}
 
-	@DeleteMapping("/topic4/{topicId}")
-	public ResponseEntity<String> deletetopic(@PathVariable String topicId) {
-		topicService.deleteTopic(topicId);
-		return new ResponseEntity<String>("Topic deleted successfully!!", HttpStatus.OK);
+	@GetMapping("/all")
+	public ResponseEntity<ResponseDto<List<TopicResponse>>> getAllTopics(HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		List<TopicResponse> allTopics = topicService.getAllTopic(userId, roles);
+		return ResponseEntity.ok(ResponseDto.forSuccess(allTopics));
+	}
 
+	@GetMapping("/{topicId}")
+	public ResponseEntity<ResponseDto<TopicResponse>> getTopicById(@PathVariable long topicId,
+																   HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		return ResponseEntity.ok(ResponseDto.forSuccess(topicService.findByTopicId(topicId, userId, roles)));
 	}
 
 }

@@ -1,80 +1,138 @@
 package com.teampheonix.tpblogpostapi.controller;
 
-import com.teampheonix.tpblogpostapi.entity.Comment;
+import com.teampheonix.tpblogpostapi.aspect.AuthorizeRoles;
+import com.teampheonix.tpblogpostapi.aspect.RolesConstants;
 import com.teampheonix.tpblogpostapi.entity.Post;
-import com.teampheonix.tpblogpostapi.services.CommentService;
+import com.teampheonix.tpblogpostapi.exception.ApiErrorCodes;
+import com.teampheonix.tpblogpostapi.exception.ApiException;
+import com.teampheonix.tpblogpostapi.model.ResponseDto;
+import com.teampheonix.tpblogpostapi.model.request.PostRequest;
+import com.teampheonix.tpblogpostapi.model.response.PostResponse;
+import com.teampheonix.tpblogpostapi.model.response.PostSummaryResponse;
 import com.teampheonix.tpblogpostapi.services.PostService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/tp/blog-post")
+@RequestMapping("/api/blog-post")
 public class PostController {
 
 	@Autowired
 	private PostService postService;
 
-	@GetMapping("/posts/language/{language}")
-    public ResponseEntity<Post> getBlogPostByLanguage(
-        @RequestParam(name = "language", defaultValue = "en") String language
-    ) {
-        Post blogPost = postService.getPostByLanguage(language);
-        if (blogPost != null) {
-            return ResponseEntity.ok(blogPost);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+	@PostMapping("/post")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER })
+	public ResponseEntity<ResponseDto<PostResponse>> createPost(HttpServletRequest request,
+														@RequestBody PostRequest postRequest) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		PostResponse post = postService.createPost(postRequest, userId, roles);
+		return ResponseEntity.ok(ResponseDto.forSuccess(post));
+	}
+
+	@PutMapping("/post/{postId}/content")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_CONTENT_MODERATOR,
+			RolesConstants.ROLES_TRANSLATOR, RolesConstants.ROLES_ADMIN })
+	public ResponseEntity<ResponseDto<PostResponse>> addContentToPost(HttpServletRequest request,
+																	  @RequestBody PostRequest postRequest,
+																	  @PathVariable("postId") long postId) {
+		if (postRequest.getContent().getPostId() != postId) {
+			throw new ApiException(ApiErrorCodes.INVALID_REQUEST);
+		}
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		PostResponse post = postService.addLanguageContentToPost(postRequest, userId, roles);
+		return ResponseEntity.ok(ResponseDto.forSuccess(post));
+	}
+
+	@GetMapping("/posts/{postId}")
+    public ResponseEntity<ResponseDto<PostResponse>> getPostByLanguage(HttpServletRequest request,
+			@PathVariable("postId") long postId,
+			@RequestParam(name = "language", defaultValue = "en") String language) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+        PostResponse postResponse = postService.getPostByLanguage(postId, language, userId, roles);
+		return ResponseEntity.ok(ResponseDto.forSuccess(postResponse));
     }
 
-	// View Posts
+	@GetMapping("/posts/all")
+	public ResponseEntity<ResponseDto<List<PostResponse>>> getAllPosts(HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		List<PostResponse> posts = postService.getAllPosts(userId, roles);
+		return ResponseEntity.ok(ResponseDto.forSuccess(posts));
+	}
+
 	@GetMapping("/posts")
-	public ResponseEntity<List<Post>> getAllImagesAdmin() {
-		List<Post> images = postService.getAllPosts();
-		return new ResponseEntity<>(images, HttpStatus.OK);
+	public ResponseEntity<ResponseDto<List<PostResponse>>> getPostsOfUser(HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		List<PostResponse> posts = postService.findPostsByUserId(userId, roles);
+		return ResponseEntity.ok(ResponseDto.forSuccess(posts));
 	}
 
-	// Get Post By Id
-	@GetMapping("/posts/{postId}")
-	public ResponseEntity<Post> getImageById(@PathVariable int postId) {
-		Post posts = postService.getPostById(postId);
-		return new ResponseEntity<>(posts, HttpStatus.OK);
+	@GetMapping("/post/{postId}")
+	public ResponseEntity<ResponseDto<PostResponse>> getPostByPostId(@PathVariable long postId,
+																	 HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		PostResponse posts = postService.getPostById(postId, userId, roles);
+		return ResponseEntity.ok(ResponseDto.forSuccess(posts));
 	}
 
-	// Add Posts
-	@PostMapping("/posts/add/{userId}")
-	public ResponseEntity<Post> addPosts(@RequestBody Post posts) {
-		Post addPost = postService.savePost(posts);
-		return new ResponseEntity<>(addPost, HttpStatus.CREATED);
+	@DeleteMapping("/post/{postId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_CONTENT_MODERATOR,
+			RolesConstants.ROLES_ADMIN })
+	public ResponseEntity<ResponseDto<String>> deletePosts(@PathVariable long postId,  HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		return ResponseEntity.ok(ResponseDto.forSuccess(postService.deletePost(postId, userId, roles)));
 	}
 
-	// Delete Posts
-	@DeleteMapping("/posts/delete/{postId}")
-	public String deletePosts(@PathVariable long postId) {
-		postService.findPostsByUserId("");
-		postService.deletePost(postId);
-		return "deleted";
+	@PutMapping("/post/{postId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_CONTENT_MODERATOR,
+			RolesConstants.ROLES_ADMIN })
+	public ResponseEntity<ResponseDto<Post>> updatePosts(@RequestBody PostRequest post, @PathVariable long postId) {
+		Post updatePost = postService.updatePost(postId, post.getPostName());
+		return ResponseEntity.ok(ResponseDto.forSuccess(updatePost));
 	}
 
-// Update Posts
-	@PutMapping("/posts/update/{postId}")
-	public ResponseEntity<Post> updatePosts(@RequestBody Post posts, @PathVariable long postId) {
-		Post updatePost = postService.updatePost(posts);
-		return new ResponseEntity<>(updatePost, HttpStatus.OK);
+	///Topics
+
+	@PutMapping("/post/{postId}/topic/{topicId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER })
+	public ResponseEntity<ResponseDto<PostSummaryResponse>> addPostToTopic(@PathVariable("postId") long postId,
+																		@PathVariable("topicId") long topicId) {
+		PostSummaryResponse response = postService.addPostToTopic(postId, topicId);
+		return ResponseEntity.ok(ResponseDto.forSuccess(response));
 	}
-// Get Posts By Language
+
+	@DeleteMapping("/post/{postId}/topic/{topicId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER })
+	public ResponseEntity<ResponseDto<String>> removePostFromTopic(@PathVariable("postId") long postId,
+																   @PathVariable("topicId") long topicId) {
+		String response = postService.removePostFromTopic(postId, topicId);
+		return ResponseEntity.ok(ResponseDto.forSuccess(response));
+	}
+
+	@DeleteMapping("/posts/topics/{topicId}")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_ADMIN })
+	public ResponseEntity<ResponseDto<String>> deletePostTopics(@PathVariable("topicId") long topicId) {
+		String response = postService.deletePostTopicsById(topicId);
+		return ResponseEntity.ok(ResponseDto.forSuccess(response));
+	}
+
+	@GetMapping("/posts/topics/{topicId}")
+	public ResponseEntity<ResponseDto<List<PostSummaryResponse>>> getPostsByTopic(@PathVariable("topicId") long topicId) {
+		List<PostSummaryResponse> response = postService.getPostsOfTopic(topicId);
+		return ResponseEntity.ok(ResponseDto.forSuccess(response));
+	}
 
 }

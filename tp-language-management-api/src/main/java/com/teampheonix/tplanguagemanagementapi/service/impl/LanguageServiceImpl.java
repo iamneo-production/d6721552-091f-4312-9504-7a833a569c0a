@@ -2,11 +2,13 @@ package com.teampheonix.tplanguagemanagementapi.service.impl;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import com.teampheonix.tplanguagemanagementapi.entity.LanguageContent;
 import com.teampheonix.tplanguagemanagementapi.exception.ApiErrorCodes;
 import com.teampheonix.tplanguagemanagementapi.exception.ApiException;
 import com.teampheonix.tplanguagemanagementapi.model.LanguageContentRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.teampheonix.tplanguagemanagementapi.repository.LanguageRepository;
@@ -46,6 +48,16 @@ public class LanguageServiceImpl implements LanguageService {
 	}
 
 	@Override
+	public List<LanguageContent> getContentsByPostId(long postId) {
+		return languageRepository.findLanguageContentsByPostId(postId);
+	}
+
+	@Override
+	public List<LanguageContent> getAllContents() {
+		return languageRepository.findAll();
+	}
+
+	@Override
 	public LanguageContent updateContent(LanguageContentRequest languageContentRequest, long contentId, String userId) {
 		LanguageContent languageContent = languageRepository.findById(contentId)
 				.orElseThrow(() -> new ApiException(ApiErrorCodes.CONTENT_NOT_FOUND));
@@ -68,6 +80,13 @@ public class LanguageServiceImpl implements LanguageService {
 			throw new ApiException(ApiErrorCodes.CONTENT_NOT_FOUND);
 		}
 		return "Language Content deleted successfully";
+	}
+
+	@Override
+	@Transactional
+	public String deleteContentsByPostId(long postId) {
+		languageRepository.deleteLanguageContentsByPostId(postId);
+		return "Contents deleted successfully!!";
 	}
 
 	private LocalDateTime getCurrentDateTime() {

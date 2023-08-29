@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-	List<Post> findByUserUserId(int userId);
-	Post findByLanguage(String Language);
+	List<Post> findPostsByUserId(String userId);
+	List<Post> findPostsByTopicsTopicId(long topicId);
 
 }

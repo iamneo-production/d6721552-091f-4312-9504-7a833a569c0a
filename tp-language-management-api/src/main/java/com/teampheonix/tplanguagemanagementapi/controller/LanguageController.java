@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.teampheonix.tplanguagemanagementapi.model.ResponseDto;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/language-management")
 public class LanguageController {
@@ -26,19 +28,31 @@ public class LanguageController {
 	@PostMapping("/content")
 	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
 			RolesConstants.ROLES_CONTENT_MODERATOR, RolesConstants.ROLES_TRANSLATOR })
-	public ResponseEntity<LanguageContent> createContent(HttpServletRequest request,
+	public ResponseEntity<ResponseDto<LanguageContent>> createContent(HttpServletRequest request,
 														 @RequestBody LanguageContentRequest languageContentRequest){
 		String userId = request.getHeader("USER_ID");
 		validateLanguageContentRequest(languageContentRequest);
 		LanguageContent content = languageService.createContent(languageContentRequest, userId);
-		return ResponseEntity.status(HttpStatus.CREATED).body(content);
+		return ResponseEntity.status(HttpStatus.CREATED).body(ResponseDto.forSuccess(content));
 	}
 
-	@GetMapping("/contents/{contentId}")
+	@GetMapping("/content/{contentId}")
 	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_CONTENT_MODERATOR })
 	public ResponseEntity<ResponseDto<LanguageContent>> getContent(@PathVariable long contentId) {
 		return ResponseEntity.status(HttpStatus.OK).body(
 				ResponseDto.forSuccess(languageService.getContentById(contentId)));
+	}
+
+	@GetMapping("/contents/post/{postId}")
+	public ResponseEntity<ResponseDto<List<LanguageContent>>> getAllContentsOfPost(@PathVariable("postId") long postId) {
+		return ResponseEntity.status(HttpStatus.OK).body(
+				ResponseDto.forSuccess(languageService.getContentsByPostId(postId)));
+	}
+
+	@GetMapping("/contents/all")
+	public ResponseEntity<ResponseDto<List<LanguageContent>>> getAllContents() {
+		return ResponseEntity.status(HttpStatus.OK).body(
+				ResponseDto.forSuccess(languageService.getAllContents()));
 	}
 
 	@GetMapping("/contents/{postId}")
@@ -63,15 +77,21 @@ public class LanguageController {
 	@DeleteMapping("/contents/{contentId}")
 	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
 			RolesConstants.ROLES_CONTENT_MODERATOR })
-	public ResponseEntity<String> deleteContent(@PathVariable long contentId ) {
+	public ResponseEntity<ResponseDto<String>> deleteContent(@PathVariable long contentId ) {
 		languageService.deleteContent(contentId);
-		  return new ResponseEntity<String>("Content deleted successfully!!", HttpStatus.OK);
+		  return ResponseEntity.ok(ResponseDto.forSuccess("Content deleted successfully!!"));
+	}
+
+	@DeleteMapping("/post/{postId}/contents")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
+			RolesConstants.ROLES_CONTENT_MODERATOR })
+	public ResponseEntity<ResponseDto<String>> deleteContentsByPostId(@PathVariable("postId") long postId) {
+		return ResponseEntity.ok(ResponseDto.forSuccess(languageService.deleteContentsByPostId(postId)));
 	}
 
 	private void validateLanguageContentRequest(LanguageContentRequest request) {
 		if (StringUtils.isBlank(request.getLanguage())
-				|| StringUtils.isBlank(request.getContent())
-				|| request.getPostId() == null || request.getPostId() < 1) {
+				|| StringUtils.isBlank(request.getContent())) {
 			throw new ApiException(ApiErrorCodes.INVALID_REQUEST);
 		}
 	}

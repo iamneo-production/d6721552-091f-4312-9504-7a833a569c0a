@@ -2,9 +2,11 @@ package com.teampheonix.tpblogpostapi.entity;
 
 import java.util.List;
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "post")
+@Data
 public class Post {
 
 	@Id
@@ -12,7 +14,6 @@ public class Post {
 	public Long postId;
 
 	private String postName;
-	private String language;
 	private String userId;
 
 	@OneToMany(cascade = CascadeType.ALL)

@@ -1,0 +1,18 @@
+Index: tp-blog-post-api/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>plugins {\r\n\tid 'java'\r\n\tid 'org.springframework.boot' version '3.1.3'\r\n\tid 'io.spring.dependency-management' version '1.1.3'\r\n}\r\n\r\ngroup = 'com.teampheonix'\r\nversion = '0.0.1'\r\n\r\njava {\r\n\tsourceCompatibility = '17'\r\n}\r\n\r\nconfigurations {\r\n\tcompileOnly {\r\n\t\textendsFrom annotationProcessor\r\n\t}\r\n}\r\n\r\nrepositories {\r\n\tmavenCentral()\r\n}\r\n\r\next {\r\n\tset('springCloudVersion', \"2022.0.4\")\r\n}\r\n\r\ndependencies {\r\n\timplementation 'org.springframework.boot:spring-boot-starter-web'\r\n\timplementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'\r\n\timplementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'\r\n\timplementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'\r\n\timplementation 'org.springframework.cloud:spring-cloud-starter-openfeign'\r\n\timplementation 'org.springframework.boot:spring-boot-starter-actuator'\r\n\timplementation 'io.micrometer:micrometer-tracing-bridge-brave'\r\n\timplementation 'io.zipkin.reporter2:zipkin-reporter-brave'\r\n\timplementation 'org.springframework.boot:spring-boot-starter-data-jpa'\r\n\timplementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'\r\n\tcompileOnly 'org.projectlombok:lombok'\r\n\tannotationProcessor 'org.projectlombok:lombok'\r\n\timplementation 'org.mapstruct:mapstruct:1.5.5.Final'\r\n\tannotationProcessor \"org.mapstruct:mapstruct-processor:1.5.5.Final\"\r\n\truntimeOnly 'com.mysql:mysql-connector-j'\r\n\timplementation 'com.h2database:h2:2.1.214'\r\n\ttestImplementation 'org.springframework.boot:spring-boot-starter-test'\r\n}\r\n\r\ndependencyManagement {\r\n\timports {\r\n\t\tmavenBom \"org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}\"\r\n\t}\r\n}\r\n\r\ntasks.named('test') {\r\n\tuseJUnitPlatform()\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tp-blog-post-api/build.gradle b/tp-blog-post-api/build.gradle
+--- a/tp-blog-post-api/build.gradle	(revision 0d3daf253bf00e4e6b59fce4dc247a8ca4e40be5)
++++ b/tp-blog-post-api/build.gradle	(date 1693259943369)
+@@ -34,6 +34,7 @@
+ 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+ 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+ 	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
++	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+ 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+ 	implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+ 	compileOnly 'org.projectlombok:lombok'

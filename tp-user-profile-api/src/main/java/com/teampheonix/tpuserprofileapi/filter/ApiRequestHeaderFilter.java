@@ -18,7 +18,7 @@ import java.util.Arrays;
 @Slf4j
 public class ApiRequestHeaderFilter extends OncePerRequestFilter implements Ordered {
 
-    private static final String[] ALLOWED_URLS = { "/register", "/validate" };
+    private static final String[] ALLOWED_URLS = { "/register", "/validate", "/swagger", "/favico", "/api-docs" };
     private static final String API_KEY = "dHAtdXNlci1wcm9maWxlLWFwaQ==";
     private static final String API_KEY_HEADER = "API_KEY";
     private static final String USER_ID_HEADER = "USER_ID";

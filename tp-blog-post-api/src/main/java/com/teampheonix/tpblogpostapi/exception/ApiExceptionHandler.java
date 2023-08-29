@@ -39,13 +39,15 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
     }
 
-    private Map<ApiErrorCodes, ErrorDto> registerErrorCodeMap() {
+    private Map<ApiErrorCodes,ErrorDto> registerErrorCodeMap() {
         Map<ApiErrorCodes,ErrorDto> errorCodeMap = new HashMap<>();
         errorCodeMap.put(ApiErrorCodes.UNAUTHORIZED_ERROR, new ErrorDto("2000", "Unauthorized Access"));
         errorCodeMap.put(ApiErrorCodes.UNAUTHORIZED_ACCESS_ERROR, new ErrorDto("2001", "You don't have required access to perform the operation"));
         errorCodeMap.put(ApiErrorCodes.INVALID_REQUEST, new ErrorDto("2002", "Invalid Request"));
-        errorCodeMap.put(ApiErrorCodes.POST_NOT_FOUND, new ErrorDto("2003", "Invalid Request"));
-        errorCodeMap.put(ApiErrorCodes.UNEXPECTED_ERROR, new ErrorDto("2099", "Unexpected Error Occurred!"));
+        errorCodeMap.put(ApiErrorCodes.POST_NOT_FOUND, new ErrorDto("2003", "Post Not Found"));
+        errorCodeMap.put(ApiErrorCodes.CONTENT_NOT_FOUND, new ErrorDto("2004", "Content Not Found"));
+        errorCodeMap.put(ApiErrorCodes.LANGUAGE_MANAGEMENT_API_ERROR, new ErrorDto("4098", "Unexpected Error Occurred from upstream API"));
+        errorCodeMap.put(ApiErrorCodes.UNEXPECTED_ERROR, new ErrorDto("4099", "Unexpected Error Occurred!"));
         return errorCodeMap;
     }
 

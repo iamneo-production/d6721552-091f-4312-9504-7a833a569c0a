@@ -1,14 +1,18 @@
 package com.teampheonix.tpblogpostapi.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "topic")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Topic {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long topicId;
+    @Id
+    public Long topicId;
 
 }
