@@ -4,17 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6409b393-6825-4dcb-84b6-70bd133df6de" name="Changes" comment="integration changes for language management api">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/iamneo-production_d6721552-091f-4312-9504-7a833a569c0a.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_29-08-2023_03_17_am__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_29-08-2023_03_17_am__Changes_.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_29-08-2023_03_17_am__Changes_1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_29-08-2023_03_17_am__Changes_1.xml" afterDir="false" />
+    <list default="true" id="6409b393-6825-4dcb-84b6-70bd133df6de" name="Changes" comment="integration changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tp-api-gateway/src/main/java/com/teampheonix/tpapigateway/model/ErrorDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/tp-api-gateway/src/main/java/com/teampheonix/tpapigateway/model/ErrorDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tp-api-gateway/src/main/java/com/teampheonix/tpapigateway/model/ResponseDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/tp-api-gateway/src/main/java/com/teampheonix/tpapigateway/model/ResponseDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tp-auth-api/build/resources/main/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/tp-auth-api/build/resources/main/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tp-blog-post-api/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/tp-blog-post-api/build.gradle" afterDir="false" />
     </list>
+    <list id="1068094a-f428-4b3c-bda1-5ce603afce77" name="Integration Changes" comment="Integration Changes" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -127,6 +120,7 @@
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="6409b393-6825-4dcb-84b6-70bd133df6de" name="Changes" comment="integration changes for language management api" />
+      <changelist id="1068094a-f428-4b3c-bda1-5ce603afce77" name="Integration Changes" comment="" />
       <created>1693160876367</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -164,7 +158,15 @@
       <option name="project" value="LOCAL" />
       <updated>1693209769995</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="integration changes">
+      <option name="closed" value="true" />
+      <created>1693263076534</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1693263076534</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -183,6 +185,7 @@
     <MESSAGE value="changes to integrate auth &amp; user profile api" />
     <MESSAGE value="removed target folder files" />
     <MESSAGE value="integration changes for language management api" />
-    <option name="LAST_COMMIT_MESSAGE" value="integration changes for language management api" />
+    <MESSAGE value="integration changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="integration changes" />
   </component>
 </project>

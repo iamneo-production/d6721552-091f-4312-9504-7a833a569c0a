@@ -15,8 +15,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ApiGatewayExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(TpException.class)
-    public Mono<ServerResponse> handleTpException(ServerWebExchange exchange, TpException exception) {
+    @ExceptionHandler(ApiException.class)
+    public Mono<ServerResponse> handleTpException(ServerWebExchange exchange, ApiException exception) {
         exchange.getAttributes().putIfAbsent(ErrorAttributes.ERROR_ATTRIBUTE, exception);
         return ServerResponse.from(
             ErrorResponse.builder(exception,HttpStatus.UNAUTHORIZED,exception.getMessage()).build());

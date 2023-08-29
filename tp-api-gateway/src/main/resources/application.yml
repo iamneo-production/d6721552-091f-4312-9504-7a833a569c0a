@@ -22,6 +22,7 @@ spring:
             - Path=/api/tp/user-profile/**
           filters:
             - RewritePath=/api/tp/user-profile/(?<ResourcePath>.*), /api/user-profile/$\{ResourcePath}
+            - AddRequestHeader=API_KEY, dHAtdXNlci1wcm9maWxlLWFwaQ==
 
         - id: tp-blog-post-api
           uri: lb://tp-blog-post-api
@@ -29,6 +30,7 @@ spring:
             - Path=/api/tp/blog-post/**
           filters:
             - RewritePath=/api/tp/blog-post/(?<ResourcePath>.*), /api/blog-post/$\{ResourcePath}
+            - AddRequestHeader=API_KEY, dHAtYmxvZy1wb3N0LWFwaQ==
 
         - id: tp-topic-management-api
           uri: lb://tp-topic-management-api
@@ -36,6 +38,7 @@ spring:
             - Path=/api/tp/topic-management/**
           filters:
             - RewritePath=/api/tp/topic-management/(?<ResourcePath>.*), /api/topic-management/$\{ResourcePath}
+            - AddRequestHeader=API_KEY, dHAtdG9waWMtbWFuYWdlbWVudC1hcGk=
 
         - id: tp-language-management-api
           uri: lb://tp-language-management-api
@@ -43,6 +46,7 @@ spring:
             - Path=/api/tp/language-management/**
           filters:
             - RewritePath=/api/tp/language-management/(?<ResourcePath>.*), /api/language-management/$\{ResourcePath}
+            - AddRequestHeader=API_KEY, dHAtbGFuZ3VhZ2UtbWFuYWdlbWVudC1hcGk=
 
         - id: tp-auth-api
           uri: lb://tp-auth-api
@@ -50,6 +54,7 @@ spring:
             - Path=/api/tp/auth/**
           filters:
             - RewritePath=/api/tp/auth/(?<ResourcePath>.*), /api/auth/$\{ResourcePath}
+            - AddRequestHeader=API_KEY, dHAtYXV0aC1hcGk=
 
 management:
   tracing:
