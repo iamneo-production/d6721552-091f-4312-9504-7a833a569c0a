@@ -1,4 +1,4 @@
-package com.teampheonix.tplanguagemanagementapi.model;
+package com.teampheonix.tpblogpostapi.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

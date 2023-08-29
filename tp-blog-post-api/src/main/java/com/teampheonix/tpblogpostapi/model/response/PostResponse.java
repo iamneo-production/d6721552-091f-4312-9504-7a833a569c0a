@@ -1,6 +1,5 @@
 package com.teampheonix.tpblogpostapi.model.response;
 
-import com.teampheonix.tpblogpostapi.entity.Comment;
 import com.teampheonix.tpblogpostapi.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
