@@ -48,6 +48,7 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
+	@Transactional
 	public PostResponse addLanguageContentToPost(PostRequest postRequest, String userId, String roles) {
 		Post post = postRepository.findById(postRequest.getContent().getPostId())
 				.orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
@@ -93,7 +94,9 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public String deletePost(long postId) {
+	@Transactional
+	public String deletePost(long postId, String userId, String roles) {
+		languageManagementClientApi.deleteContentsByPostId(postId, API_KEY, userId, roles);
 		postRepository.deleteById(postId);
 		return "Deleted Successfully";
 	}

@@ -17,6 +17,6 @@ public interface PostService {
 	PostResponse getPostById(long postId, String userId, String roles);
 	Post findPostById(long postId);
 	Post updatePost(long postId, String postName);
-	String deletePost(long posId);
+	String deletePost(long posId, String userId, String roles);
 
 }

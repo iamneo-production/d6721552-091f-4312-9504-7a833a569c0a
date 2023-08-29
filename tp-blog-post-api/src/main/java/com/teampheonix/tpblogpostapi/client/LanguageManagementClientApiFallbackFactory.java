@@ -39,6 +39,11 @@ public class LanguageManagementClientApiFallbackFactory implements FallbackFacto
                 throw handleApiException();
             }
 
+            @Override
+            public ResponseDto<String> deleteContentsByPostId(long postId, String apiKey, String userId, String roles) {
+                throw handleApiException();
+            }
+
             private ApiException handleApiException() {
                 if (cause instanceof ApiException) {
                     return new ApiException(((ApiException) cause).getCode());

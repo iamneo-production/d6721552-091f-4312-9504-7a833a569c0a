@@ -41,4 +41,10 @@ public interface LanguageManagementClientApi {
                                                               @RequestHeader("USER_ID") String userId,
                                                               @RequestHeader("CLAIMS") String roles);
 
+    @DeleteMapping("/api/language-management/post/{postId}/contents")
+    ResponseDto<String> deleteContentsByPostId(@PathVariable("postId") long postId,
+                                              @RequestHeader("API_KEY") String apiKey,
+                                              @RequestHeader("USER_ID") String userId,
+                                              @RequestHeader("CLAIMS") String roles);
+
 }

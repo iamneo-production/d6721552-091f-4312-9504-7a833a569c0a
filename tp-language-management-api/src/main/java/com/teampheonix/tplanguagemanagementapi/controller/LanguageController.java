@@ -82,6 +82,13 @@ public class LanguageController {
 		  return ResponseEntity.ok(ResponseDto.forSuccess("Content deleted successfully!!"));
 	}
 
+	@DeleteMapping("/post/{postId}/contents")
+	@AuthorizeRoles(roles = { RolesConstants.ROLES_ADMIN, RolesConstants.ROLES_BLOGGER,
+			RolesConstants.ROLES_CONTENT_MODERATOR })
+	public ResponseEntity<ResponseDto<String>> deleteContentsByPostId(@PathVariable("postId") long postId) {
+		return ResponseEntity.ok(ResponseDto.forSuccess(languageService.deleteContentsByPostId(postId)));
+	}
+
 	private void validateLanguageContentRequest(LanguageContentRequest request) {
 		if (StringUtils.isBlank(request.getLanguage())
 				|| StringUtils.isBlank(request.getContent())) {

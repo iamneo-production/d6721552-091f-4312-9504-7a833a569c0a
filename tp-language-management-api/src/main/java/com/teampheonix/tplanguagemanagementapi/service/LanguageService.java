@@ -14,5 +14,6 @@ public interface LanguageService {
 	List<LanguageContent> getAllContents();
 	LanguageContent updateContent(LanguageContentRequest languageContentRequest, long contentId, String userId);
 	String deleteContent(long contentId);
+	String deleteContentsByPostId(long postId);
 
 }

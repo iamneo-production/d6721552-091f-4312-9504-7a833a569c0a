@@ -89,8 +89,10 @@ public class PostController {
 	@DeleteMapping("/post/{postId}")
 	@AuthorizeRoles(roles = { RolesConstants.ROLES_BLOGGER, RolesConstants.ROLES_CONTENT_MODERATOR,
 			RolesConstants.ROLES_ADMIN })
-	public ResponseEntity<ResponseDto<String>> deletePosts(@PathVariable long postId) {
-		return ResponseEntity.ok(ResponseDto.forSuccess(postService.deletePost(postId)));
+	public ResponseEntity<ResponseDto<String>> deletePosts(@PathVariable long postId,  HttpServletRequest request) {
+		String userId = request.getHeader("USER_ID");
+		String roles = request.getHeader("CLAIMS");
+		return ResponseEntity.ok(ResponseDto.forSuccess(postService.deletePost(postId, userId, roles)));
 	}
 
 	@PutMapping("/post/{postId}")

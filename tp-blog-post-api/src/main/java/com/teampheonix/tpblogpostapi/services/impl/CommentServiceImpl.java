@@ -39,9 +39,11 @@ public class CommentServiceImpl implements CommentService {
 	public String deleteComment(long postId, long commentId) {
 		Post post = postRepository.findById(postId)
 				.orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
-		post.getComments().clear();
+		Comment comment = commentRepository.findById(commentId)
+				.orElseThrow(() -> new ApiException(ApiErrorCodes.INVALID_REQUEST));
+		post.getComments().remove(comment);
 		postRepository.save(post);
-		commentRepository.deleteById(commentId);
+		commentRepository.delete(comment);
 		return "Deleted Successfully";
 	}
 

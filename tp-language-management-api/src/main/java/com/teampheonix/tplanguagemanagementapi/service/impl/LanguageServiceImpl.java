@@ -8,6 +8,7 @@ import com.teampheonix.tplanguagemanagementapi.entity.LanguageContent;
 import com.teampheonix.tplanguagemanagementapi.exception.ApiErrorCodes;
 import com.teampheonix.tplanguagemanagementapi.exception.ApiException;
 import com.teampheonix.tplanguagemanagementapi.model.LanguageContentRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.teampheonix.tplanguagemanagementapi.repository.LanguageRepository;
@@ -79,6 +80,13 @@ public class LanguageServiceImpl implements LanguageService {
 			throw new ApiException(ApiErrorCodes.CONTENT_NOT_FOUND);
 		}
 		return "Language Content deleted successfully";
+	}
+
+	@Override
+	@Transactional
+	public String deleteContentsByPostId(long postId) {
+		languageRepository.deleteLanguageContentsByPostId(postId);
+		return "Contents deleted successfully!!";
 	}
 
 	private LocalDateTime getCurrentDateTime() {
