@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6409b393-6825-4dcb-84b6-70bd133df6de" name="Changes" comment="restored changes of blog post api" />
+    <list default="true" id="6409b393-6825-4dcb-84b6-70bd133df6de" name="Changes" comment="restored changes of blog post api &amp; language management" />
     <list id="1068094a-f428-4b3c-bda1-5ce603afce77" name="Integration Changes" comment="Integration Changes" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,7 +173,15 @@
       <option name="project" value="LOCAL" />
       <updated>1693288370265</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="restored changes of blog post api &amp; language management">
+      <option name="closed" value="true" />
+      <created>1693291501283</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1693291501283</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -194,6 +202,7 @@
     <MESSAGE value="integration changes for language management api" />
     <MESSAGE value="integration changes" />
     <MESSAGE value="restored changes of blog post api" />
-    <option name="LAST_COMMIT_MESSAGE" value="restored changes of blog post api" />
+    <MESSAGE value="restored changes of blog post api &amp; language management" />
+    <option name="LAST_COMMIT_MESSAGE" value="restored changes of blog post api &amp; language management" />
   </component>
 </project>

@@ -54,7 +54,8 @@ public class ClientApiErrorDecoder implements ErrorDecoder {
         errorCodeMap.put("2000", ApiErrorCodes.UNAUTHORIZED_ERROR);
         errorCodeMap.put("2001", ApiErrorCodes.UNAUTHORIZED_ACCESS_ERROR);
         errorCodeMap.put("2002", ApiErrorCodes.INVALID_REQUEST);
-        errorCodeMap.put("4099", ApiErrorCodes.BLOG_POST_API_ERROR);
+        errorCodeMap.put("2003", ApiErrorCodes.POST_NOT_FOUND);
+        errorCodeMap.put("2099", ApiErrorCodes.BLOG_POST_API_ERROR);
         return errorCodeMap;
     }
 

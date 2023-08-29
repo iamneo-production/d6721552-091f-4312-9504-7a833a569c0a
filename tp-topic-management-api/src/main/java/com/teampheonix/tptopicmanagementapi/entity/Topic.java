@@ -31,7 +31,8 @@ public class Topic {
 	private long topicId;
 	@Column(unique = true)
 	private String topicName;
-	private String createdBy; 
+	private String userId;
+	private String createdBy;
 	private String lastUpdatedBy;
     private LocalDateTime creationTimestamp;
     private LocalDateTime lastUpdatedTimestamp;

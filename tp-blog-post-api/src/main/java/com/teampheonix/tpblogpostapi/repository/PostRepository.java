@@ -10,5 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface PostRepository extends JpaRepository<Post, Long> {
 
 	List<Post> findPostsByUserId(String userId);
+	List<Post> findPostsByTopicsTopicId(long topicId);
 
 }

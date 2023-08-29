@@ -2,16 +2,20 @@ package com.teampheonix.tpblogpostapi.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.teampheonix.tpblogpostapi.client.LanguageManagementClientApi;
 import com.teampheonix.tpblogpostapi.entity.Post;
+import com.teampheonix.tpblogpostapi.entity.Topic;
 import com.teampheonix.tpblogpostapi.exception.ApiErrorCodes;
 import com.teampheonix.tpblogpostapi.exception.ApiException;
 import com.teampheonix.tpblogpostapi.model.request.PostRequest;
 import com.teampheonix.tpblogpostapi.model.response.LanguageContentResponse;
 import com.teampheonix.tpblogpostapi.model.response.PostResponse;
+import com.teampheonix.tpblogpostapi.model.response.PostSummaryResponse;
 import com.teampheonix.tpblogpostapi.repository.CommentRepository;
 import com.teampheonix.tpblogpostapi.repository.PostRepository;
+import com.teampheonix.tpblogpostapi.repository.TopicRepository;
 import com.teampheonix.tpblogpostapi.services.PostService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +31,9 @@ public class PostServiceImpl implements PostService {
 
 	@Autowired
 	private CommentRepository commentRepository;
+
+	@Autowired
+	private TopicRepository topicRepository;
 
 	@Autowired
 	private LanguageManagementClientApi languageManagementClientApi;
@@ -82,11 +89,6 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public Post findPostById(long postId) {
-		return postRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
-	}
-
-	@Override
 	public Post updatePost(long postId, String postName) {
 		Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
 		post.setPostName(postName);
@@ -119,6 +121,49 @@ public class PostServiceImpl implements PostService {
 		LanguageContentResponse response =
 				languageManagementClientApi.getContentByLanguage(postId, language, API_KEY, userId, roles).getData();
 		return new PostResponse(post, List.of(response));
+	}
+
+	@Override
+	public PostSummaryResponse addPostToTopic(long postId, long topicId) {
+		Topic topic;
+		Optional<Topic> existingTopic = topicRepository.findById(topicId);
+		if (existingTopic.isEmpty()) {
+			topic = new Topic(topicId);
+			topicRepository.save(topic);
+		} else {
+			topic = existingTopic.get();
+		}
+		Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
+		post.getTopics().add(topic);
+		postRepository.save(post);
+		return new PostSummaryResponse(post.getPostId(), post.getPostName(), post.getUserId());
+	}
+
+	@Override
+	public String removePostFromTopic(long postId, long topicId) {
+		Topic topic = topicRepository.findById(topicId)
+				.orElseThrow(() -> new ApiException(ApiErrorCodes.INVALID_REQUEST));
+		Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCodes.POST_NOT_FOUND));
+		post.getTopics().remove(topic);
+		postRepository.save(post);
+		return null;
+	}
+
+	@Override
+	public String deletePostTopicsById(long topicId) {
+		Topic topic = topicRepository.findById(topicId)
+				.orElseThrow(() -> new ApiException(ApiErrorCodes.INVALID_REQUEST));
+		List<Post> posts = postRepository.findPostsByTopicsTopicId(topicId);
+		posts.forEach(p -> p.getTopics().remove(topic));
+		return "Deleted Successfully";
+	}
+
+	@Override
+	public List<PostSummaryResponse> getPostsOfTopic(long topicId) {
+		List<PostSummaryResponse> postSummaryResponses = new ArrayList<>();
+		List<Post> posts = postRepository.findPostsByTopicsTopicId(topicId);
+		posts.forEach(p -> postSummaryResponses.add(new PostSummaryResponse(p.getPostId(), p.getPostName(), p.getUserId())));
+		return postSummaryResponses;
 	}
 
 }

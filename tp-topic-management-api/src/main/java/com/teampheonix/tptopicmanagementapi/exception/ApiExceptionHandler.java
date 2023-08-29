@@ -46,6 +46,7 @@ public class ApiExceptionHandler {
         errorCodeMap.put(ApiErrorCodes.INVALID_REQUEST, new ErrorDto("3002", "Invalid Request"));
         errorCodeMap.put(ApiErrorCodes.POST_NOT_FOUND, new ErrorDto("3003", "Post Not Found"));
         errorCodeMap.put(ApiErrorCodes.TOPIC_NOT_FOUND, new ErrorDto("3004", "Topic Not Found"));
+        errorCodeMap.put(ApiErrorCodes.TOPIC_ALREADY_EXISTS, new ErrorDto("3005", "Topic Already Exists"));
         errorCodeMap.put(ApiErrorCodes.BLOG_POST_API_ERROR, new ErrorDto("3098", "Unexpected Error Occurred from Upstream API"));
         errorCodeMap.put(ApiErrorCodes.UNEXPECTED_ERROR, new ErrorDto("3099", "Unexpected Error Occurred!"));
         return errorCodeMap;
